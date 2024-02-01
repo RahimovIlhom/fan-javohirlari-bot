@@ -27,13 +27,13 @@ class Database:
         cur = conn.cursor()
         if await self.select_user(tg_id):
             SQL_query = ("update users set language=?, fullname=?, phone_number=?, region=?, district=?, "
-                         "school_number=?, science1=?, science2=?, science3=?, olimpia_science=?, update_time=? where "
-                         "tg_id=?;")
+                         "school_number=?, science_1=?, science_2=?, science_3=?, olimpia_science=?, update_time=? "
+                         "where tg_id=?;")
             cur.execute(SQL_query, (language, fullname, phone, region, district, school, sc1, sc2, sc3, science, datetime.datetime.now(), tg_id))
         else:
             SQL_query = ("insert into users (tg_id, language, fullname, phone_number, region, district, school_number, "
-                         "science1, science2, science3, olimpia_science, created_time, update_time) values (?, ?, ?, "
-                         "?, ?, ?, ?, ?, ?, ?);")
+                         "science_1, science_2, science_3, olimpia_science, created_time, update_time) values (?, ?, ?,"
+                         "?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")
             cur.execute(SQL_query, (tg_id, language, fullname, phone, region, district, school, sc1, sc2, sc3, science,
                                     datetime.datetime.now(), datetime.datetime.now()))
         conn.commit()

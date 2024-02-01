@@ -3,3 +3,4 @@ from .register_buttons import (language_markup, phone_ru_markup, phone_uz_markup
                                sciences_uz_markup, sciences_ru_markup)
 from .back_buttons import back_uz_button, back_ru_button
 from .admin_buttons import menu_markup
+from .online_lessons_buttons import make_lessons_uz_markup, make_lessons_ru_markup

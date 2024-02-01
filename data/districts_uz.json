@@ -11,7 +11,8 @@
       "Uchtepa tumani",
       "Yakkasaroy tumani",
       "Yashnaobod tumani",
-      "Yunusobod tumani"
+      "Yunusobod tumani",
+      "Boshqa tuman / shahar"
     ],
   "Toshkent viloyati":
     [
@@ -32,7 +33,8 @@
       "Quyi chirchiq tumani",
       "Yangiyo'l tumani",
       "Yuqori chirchiq tumani",
-      "Zangiota tumani"
+      "Zangiota tumani",
+      "Boshqa tuman / shahar"
     ],
   "Namangan viloyati":
     [
@@ -47,7 +49,8 @@
       "To'raqo'rg'on tumani",
       "Uchqo'rg'on tumani",
       "Uychi tumani",
-      "Yangiqo'rgon tumani"
+      "Yangiqo'rgon tumani",
+      "Boshqa tuman / shahar"
     ],
   "Navoiy viloyati":
     [
@@ -60,7 +63,8 @@
       "Tomdi tumani",
       "Uchquduq tumani",
       "Xatirchi tumani",
-      "Zarafshon shahri"
+      "Zarafshon shahri",
+      "Boshqa tuman / shahar"
     ],
   "Qoraqalpogʻiston Respublikasi":
     [
@@ -79,7 +83,8 @@
       "Taxiatosh shahri",
       "Taxtako'pir tumani",
       "To'rtko'l tumani",
-      "Xo'jayli tumani"
+      "Xo'jayli tumani",
+      "Boshqa tuman / shahar"
     ],
   "Qashqadaryo viloyati":
     [
@@ -96,7 +101,8 @@
       "Qarshi shahri",
       "Qarshi tumani",
       "Shahrisabz shahri",
-      "Yakkabog' tumani"
+      "Yakkabog' tumani",
+      "Boshqa tuman / shahar"
     ],
   "Andijon viloyati":
     [
@@ -115,7 +121,8 @@
       "Shahrixon tumani",
       "Ulug'nor tumani",
       "Xo'jaobod tumani",
-      "Xonobod shahri"
+      "Xonobod shahri",
+      "Boshqa tuman / shahar"
     ],
   "Samarqand viloyati":
     [
@@ -134,7 +141,8 @@
       "Samarqand shahri",
       "Samarqand tumani",
       "Toyloq tumani",
-      "Urgut tumani"
+      "Urgut tumani",
+      "Boshqa tuman / shahar"
     ],
   "Buxoro viloyati":
     [
@@ -150,7 +158,8 @@
       "Qorovulbozor tumani",
       "Romitan tumani",
       "Shofirkon tumani",
-      "Vobkent tumani"
+      "Vobkent tumani",
+      "Boshqa tuman / shahar"
     ],
   "Sirdaryo viloyati":
     [
@@ -162,7 +171,8 @@
       "Sayxunobod tumani",
       "Shirin shahri",
       "Sirdaryo tumani",
-      "Xovos tumani"
+      "Xovos tumani",
+      "Boshqa tuman / shahar"
     ],
   "Fargʻona viloyati":
     [
@@ -184,7 +194,8 @@
       "So'x tumani",
       "Toshloq tumani",
       "Uchko'prik tumani",
-      "Yozyovon tumani"
+      "Yozyovon tumani",
+      "Boshqa tuman / shahar"
     ],
   "Surxondaryo viloyati":
     [
@@ -202,7 +213,8 @@
       "Sho'rchi tumani",
       "Termiz shahri",
       "Termiz tumani",
-      "Uzun tumani"
+      "Uzun tumani",
+      "Boshqa tuman / shahar"
     ],
   "Jizzax viloyati":
     [
@@ -218,7 +230,8 @@
       "Yangiobod tumani",
       "Zafarobod tumani",
       "Zarband tumani",
-      "Zomin tumani"
+      "Zomin tumani",
+      "Boshqa tuman / shahar"
     ],
   "Xorazm viloyati":
     [
@@ -232,6 +245,7 @@
       "Xiva tumani",
       "Xonqa tumani",
       "Yangiariq tumani",
-      "Yangibozor tumani"
+      "Yangibozor tumani",
+      "Boshqa tuman / shahar"
     ]
 }

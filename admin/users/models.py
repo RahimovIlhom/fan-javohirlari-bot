@@ -9,7 +9,10 @@ class CustomUser(models.Model):
     region = models.CharField(max_length=50)
     district = models.CharField(max_length=50)
     school_number = models.CharField(max_length=20)
-    science = models.CharField(max_length=20)
+    science_1 = models.CharField(max_length=20, null=True, blank=True)
+    science_2 = models.CharField(max_length=20, null=True, blank=True)
+    science_3 = models.CharField(max_length=20, null=True, blank=True)
+    olimpia_science = models.CharField(max_length=20)
     created_time = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
 

@@ -8,4 +8,5 @@ class RegisterStatesGroup(StatesGroup):
     region = State()
     district = State()
     school = State()
+    online_sc = State()
     science = State()

@@ -284,7 +284,7 @@ async def choice_online_lesson(msg: types.Message, state: FSMContext):
 
 
 @dp.message_handler(state=RegisterStatesGroup.online_sc, content_types=ContentType.ANY)
-async def err_send_science(msg: types.Message, state: FSMContext):
+async def err_online_lessons(msg: types.Message, state: FSMContext):
     await msg.delete()
     data = await state.get_data()
     sc1, sc2, sc3 = data.get('sc1'), data.get('sc2'), data.get('sc3')

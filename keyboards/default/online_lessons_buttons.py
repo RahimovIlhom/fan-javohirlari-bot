@@ -5,11 +5,11 @@ from data.config import sciences_uz, sciences_ru
 
 async def make_lessons_uz_markup(sc1=None, sc2=None, sc3=None):
     sciences = sciences_uz.copy()
-    if sc1 != '-' and sc1:
+    if sc1 in sciences:
         sciences.remove(sc1)
-    if sc2 != '-' and sc2:
+    if sc2 in sciences:
         sciences.remove(sc2)
-    if sc3 != '-' and sc3:
+    if sc3 in sciences:
         sciences.remove(sc3)
     sciences_uz_markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     for science in sciences:
@@ -24,11 +24,11 @@ async def make_lessons_uz_markup(sc1=None, sc2=None, sc3=None):
 
 async def make_lessons_ru_markup(sc1=None, sc2=None, sc3=None):
     sciences = sciences_ru.copy()
-    if sc1 != '-' and sc1:
+    if sc1 in sciences:
         sciences.remove(sc1)
-    if sc2 != '-' and sc2:
+    if sc2 in sciences:
         sciences.remove(sc2)
-    if sc3 != '-' and sc3:
+    if sc3 in sciences:
         sciences.remove(sc3)
     sciences_ru_markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     for science in sciences:

@@ -34,8 +34,15 @@ async def bot_start(message: types.Message, state: FSMContext):
 
 @dp.message_handler(IsPrivate(), commands=['re_register'])
 async def re_register(msg: types.Message, state: FSMContext):
+    if str(msg.from_user.id) in ADMINS:
+        await msg.answer("Admin uchun ro'yxatdan o'tish shart emas!")
+        return
     user = await db.select_user(msg.from_user.id)
     if user:
         await msg.answer("Iltimos, tilni tanlang.\n\n"
                          "Пожалуйста, выберите язык.", reply_markup=language_markup)
         await state.set_state(RegisterStatesGroup.language)
+    else:
+        await msg.answer("Siz hali ro'yxatdan o'tmagansiz.\n"
+                         "Ro'yxatdan o'tish uchun - /start\n\n"
+                         "Вы еще не зарегистрировались.\nДля регистрации - /start")

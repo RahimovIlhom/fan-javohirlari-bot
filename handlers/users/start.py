@@ -14,6 +14,7 @@ from states import RegisterStatesGroup
 async def bot_start(message: types.Message, state: FSMContext):
     if str(message.from_user.id) in ADMINS:
         await message.answer("Menu", reply_markup=menu_markup)
+        await state.finish()
         return
     user = await db.select_user(message.from_user.id)
     if user:

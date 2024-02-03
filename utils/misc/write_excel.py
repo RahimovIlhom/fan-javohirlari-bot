@@ -1,25 +1,27 @@
-from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment
+import xlsxwriter
+import os
 
 
 async def write_data_excel(columns, data):
-    workbook = Workbook()
-    sheet = workbook.active
+    directory_path = 'data/users'
+    os.makedirs(directory_path, exist_ok=True)
 
-    # Add styles
-    header_style = Font(bold=True)
-    align_center = Alignment(horizontal='center', vertical='center')
+    excel_file_path = os.path.join(directory_path, 'data.xlsx')
+    workbook = xlsxwriter.Workbook(excel_file_path)
+    sheet = workbook.add_worksheet()
 
-    # Write header with styles
-    for col_num, col_value in enumerate(columns, 1):
-        cell = sheet.cell(row=1, column=col_num, value=col_value)
-        cell.font = header_style
-        cell.alignment = align_center
+    bold_format = workbook.add_format({'bold': True, 'align': 'center', 'valign': 'vcenter', 'bg_color': '#FFFF00'})
+    header_format = workbook.add_format({'bold': True, 'align': 'center', 'valign': 'vcenter', 'bg_color': '#00BFFF', 'font_color': '#FFFFFF'})
+    data_format = workbook.add_format({'align': 'center', 'valign': 'vcenter'})
 
-    # Write data with styles
-    for row_num, row_values in enumerate(data, 2):
-        for col_num, col_value in enumerate(row_values, 1):
-            cell = sheet.cell(row=row_num, column=col_num, value=col_value)
-            cell.alignment = align_center
+    for col_num, header_text in enumerate(columns):
+        sheet.write(0, col_num, header_text, header_format)
 
-    workbook.save('data/users/data.xlsx')
+    for row_num, row_data in enumerate(data, start=1):
+        for col_num, cell_data in enumerate(row_data):
+            sheet.write(row_num, col_num, cell_data, data_format)
+
+    workbook.close()
+
+    print(f'Ma\'lumotlar {excel_file_path} fayliga yozildi.')
+

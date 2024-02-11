@@ -206,6 +206,9 @@ async def send_true_response(call: types.CallbackQuery, state: FSMContext):
     await call.message.answer("Savol muvaffaqiyatli qo'shildi!")
     test_id = data.get('test_id')
     test_info = await db.select_test_id(test_id)
-    await call.message.answer(f"{test_info[1]} fani {test_info[2]} testi uchun amalni tanlang:",
+    all_tests = await db.select_questions_test_id(test_id)
+    await call.message.answer(f"{test_info[1]} fani {test_info[2]} testi uchun amalni tanlang:\n"
+                              f"Testlar soni: {len(all_tests)}/{data.get('quantity')}"
+                              f"{'✅' if len(all_tests) >= data.get('quantity') else ''}",
                               reply_markup=await create_edit_test_markup(test_id))
     await AddQuestionTestStatesGroup.test.set()

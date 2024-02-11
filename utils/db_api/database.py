@@ -127,7 +127,6 @@ class Database:
     async def select_test_id(self, test_id):
         conn = await self.connect
         cur = conn.cursor()
-        print(cur.execute("PRAGMA table_info(tests)").fetchall())
         resp = cur.execute(f"SELECT * FROM tests WHERE id = ?", (test_id, ))
         return resp.fetchone()
 
@@ -142,7 +141,7 @@ class Database:
         conn = await self.connect
         cur = conn.cursor()
 
-        if int(kwargs.get('quantity')) >= number_question:
+        if int(kwargs.get('quantity')) <= number_question:
             cur.execute("update tests set is_confirm = ? where id = ?", (True, test_id))
             conn.commit()
 

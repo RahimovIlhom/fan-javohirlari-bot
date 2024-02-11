@@ -70,8 +70,8 @@ async def choice_test_science(msg: types.Message, state: FSMContext):
         success = "✅ Juda yaxshi!"
         info = (f"{msg.text} fani uchun test.\n\n"
                 f"📝 Savollar soni: {test_app[4]}\n"
-                f"⏰ Test yechish vaqti: 2 soat\n"
-                f"🏁 Tugash vaqti: {(datetime.datetime.now() + datetime.timedelta(hours=2)).time().replace(microsecond=0)}\n"
+                f"⏰ Test yechish vaqti: {test_app[3]} daqiqa\n"
+                f"🏁 Tugash vaqti: {(datetime.datetime.now() + datetime.timedelta(minutes=test_app[3])).time().replace(microsecond=0)}\n"
                 f"Testni boshlash uchun \"👨‍💻 Testni boshlash\" tugmasini bosing!")
         markup = start_test_markup_uz
     else:
@@ -90,15 +90,15 @@ async def choice_test_science(msg: types.Message, state: FSMContext):
         success = "✅ Очень хорошо!"
         info = (f"Тест по предмету {msg.text}\n\n"
                 f"📝 Количество вопросов: {test_app[4]}\n"
-                f"⏰ Время прохождения теста: 2 часа\n"
-                f"🏁 Время завершения: {(datetime.datetime.now() + datetime.timedelta(hours=2)).time().replace(microsecond=0)}\n"
+                f"⏰ Время прохождения теста: {test_app[3]} минут\n"
+                f"🏁 Время завершения: {(datetime.datetime.now() + datetime.timedelta(minutes=test_app[3])).time().replace(microsecond=0)}\n"
                 f"Нажмите кнопку \"👨‍💻 Начать тест\" для начала тестирования!")
         markup = start_test_markup_ru
     await state.update_data({'test_id': test_app[0], 'questions_count': test_app[4], 'time_continue': test_app[3]})
     message = await msg.answer(success, reply_markup=ReplyKeyboardRemove())
     await msg.answer(info, reply_markup=markup)
     await TestStatesGroup.next()
-    time.sleep(2.5)
+    time.sleep(2)
     await message.delete()
 
 

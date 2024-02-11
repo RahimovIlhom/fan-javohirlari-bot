@@ -19,11 +19,9 @@ async def bot_start(message: types.Message, state: FSMContext):
     user = await db.select_user(message.from_user.id)
     if user:
         if user[2] == 'uzbek':
-            await message.answer("✅ Siz muvaffaqiyatli ro'yxatdan o'tgansiz.\n"
-                                 "Test topshirish uchun quyidagi tugmadan foydalaning 👇", reply_markup=menu_test_uz)
+            await message.answer("Test topshirish uchun quyidagi tugmadan foydalaning 👇", reply_markup=menu_test_uz)
         else:
-            await message.answer("✅ Вы успешно зарегистрировались.\n"
-                                 "Используйте кнопку ниже, чтобы пройти тест 👇", reply_markup=menu_test_ru)
+            await message.answer("Используйте кнопку ниже, чтобы пройти тест 👇", reply_markup=menu_test_ru)
         await state.finish()
         return
     await message.answer(f"Assalomu alaykum! \"Fan javohirlari\" loyihasining rasmiy botiga xush kelibsiz. "

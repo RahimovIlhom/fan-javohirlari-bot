@@ -8,7 +8,7 @@ from loader import dp, db, bot
 from utils.misc.write_excel import write_data_excel
 
 
-@dp.message_handler(text="O'quvchilar ro'yxati", user_id=ADMINS)
+@dp.message_handler(text="📃 O'quvchilar ro'yxati", user_id=ADMINS)
 async def show_users_excel(msg: types.Message):
     columns = await db.select_column_names()
     users = await db.select_users()
@@ -17,7 +17,7 @@ async def show_users_excel(msg: types.Message):
     await msg.answer_document(file, caption="Barcha o'quvchilar ro'yxati!")
 
 
-@dp.message_handler(text="Xabar yuborish", user_id=ADMINS)
+@dp.message_handler(text="✉️ Xabar yuborish", user_id=ADMINS)
 async def show_users_excel(msg: types.Message, state: FSMContext):
     await msg.answer("Barcha o'quvchilar uchun xabarni kiriting:", reply_markup=ReplyKeyboardRemove())
     await state.set_state('send_message')

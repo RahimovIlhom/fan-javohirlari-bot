@@ -67,12 +67,12 @@ async def choice_test_science(msg: types.Message, state: FSMContext):
             await msg.answer("Bu testni allaqachon yechib bo'lgansiz!\n"
                              "Iltimos yangi test yuklanishini kuting.")
             return
-        success = "Juda yaxshi!"
-        info = (f"{msg.text} fani uchun test.\n"
-                f"Savollar soni: {test_app[4]}\n"
-                f"Test yechish vaqti: 2 soat\n"
-                f"Tugash vaqti: {(datetime.datetime.now() + datetime.timedelta(hours=2)).time().replace(microsecond=0)}\n"
-                f"Testni boshlash uchun \"Testni boshlash\" tugmasini bosing!")
+        success = "✅ Juda yaxshi!"
+        info = (f"{msg.text} fani uchun test.\n\n"
+                f"📝 Savollar soni: {test_app[4]}\n"
+                f"⏰ Test yechish vaqti: 2 soat\n"
+                f"🏁 Tugash vaqti: {(datetime.datetime.now() + datetime.timedelta(hours=2)).time().replace(microsecond=0)}\n"
+                f"Testni boshlash uchun \"👨‍💻 Testni boshlash\" tugmasini bosing!")
         markup = start_test_markup_uz
     else:
         if msg.text not in sciences_ru:
@@ -87,12 +87,12 @@ async def choice_test_science(msg: types.Message, state: FSMContext):
             await msg.answer("Вы уже завершили этот тест!\n"
                              "Пожалуйста, подождите загрузки нового теста.")
             return
-        success = "Очень хорошо!"
-        info = (f"Тест по предмету {msg.text}\n"
-                f"Количество вопросов: {test_app[4]}\n"
-                f"Время прохождения теста: 2 часа\n"
-                f"Время завершения: {(datetime.datetime.now() + datetime.timedelta(hours=2)).time().replace(microsecond=0)}\n"
-                f"Нажмите кнопку \"Начать тест\" для начала тестирования!")
+        success = "✅ Очень хорошо!"
+        info = (f"Тест по предмету {msg.text}\n\n"
+                f"📝 Количество вопросов: {test_app[4]}\n"
+                f"⏰ Время прохождения теста: 2 часа\n"
+                f"🏁 Время завершения: {(datetime.datetime.now() + datetime.timedelta(hours=2)).time().replace(microsecond=0)}\n"
+                f"Нажмите кнопку \"👨‍💻 Начать тест\" для начала тестирования!")
         markup = start_test_markup_ru
     await state.update_data({'test_id': test_app[0], 'questions_count': test_app[4], 'time_continue': test_app[3]})
     message = await msg.answer(success, reply_markup=ReplyKeyboardRemove())
@@ -162,11 +162,11 @@ async def select_response(call: types.CallbackQuery, callback_data: dict, state:
         user = await db.select_user(call.from_user.id)
         if datetime.datetime.now() - datetime.timedelta(minutes=data.get('time_continue')) > data.get('start_time'):
             if data.get('language') == 'uzbek':
-                await call.message.answer("Test vaqti tugadi!\n"
+                await call.message.answer("❗️ Test vaqti tugadi!\n"
                                           "Shuning uchun test javoblaringiz qabul qilinmadi.",
                                           reply_markup=menu_test_uz)
             else:
-                await call.message.answer("Время теста истекло!\n"
+                await call.message.answer("❗️ Время теста истекло!\n"
                                           "Ваши ответы не были приняты по причине отсутствия.",
                                           reply_markup=menu_test_ru)
             await db.add_test_result(test_id, call.from_user.id, data.get('language'), *user[3:8], data.get('science'),
@@ -179,13 +179,13 @@ async def select_response(call: types.CallbackQuery, callback_data: dict, state:
         await db.add_test_result(test_id, call.from_user.id, data.get('language'), *user[3:8], data.get('science'),
                                  db_responses, datetime.datetime.now())
         if data.get('language') == 'uzbek':
-            await call.message.answer("Test yakunlandi!\n"
+            await call.message.answer("✅ Test yakunlandi!\n"
                                       f"Hurmatli {user[3]}, siz test savollarining "
                                       f"{db_responses.count('1')} tasiga to’g’ri va {db_responses.count('0')} "
                                       f"tasiga noto’g’ri javob berdingiz.",
                                       reply_markup=menu_test_uz)
         else:
-            await call.message.answer("Тест завершен!\n"
+            await call.message.answer("✅ Тест завершен!\n"
                                       f"Уважаемый(ая) {user[3]}, Вы ответили на "
                                       f"{db_responses.count('1')} вопросов теста правильно, а на "
                                       f"{db_responses.count('0')} — неправильно",

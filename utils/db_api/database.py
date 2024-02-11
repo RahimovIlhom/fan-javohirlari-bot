@@ -22,6 +22,12 @@ class Database:
         resp = cur.execute(f"select * from users where tg_id={tg_id}")
         return resp.fetchone()
 
+    async def select_user_phone(self, phone_number, *args, **kwargs):
+        conn = await self.connect
+        cur = conn.cursor()
+        resp = cur.execute(f"select * from users where phone_number={phone_number}")
+        return resp.fetchone()
+
     async def add_or_update_user(self, tg_id, language, fullname, phone, region, district, school, science, sc1='-', sc2='-', sc3='-', *args, **kwargs):
         conn = await self.connect
         cur = conn.cursor()
@@ -44,3 +50,43 @@ class Database:
         resp = cur.execute("select * from users")
         names = tuple(map(lambda x: x[0], resp.description))
         return names
+
+    async def select_result_test_user(self, tg_id, science):
+        conn = await self.connect
+        cur = conn.cursor()
+        test_id = cur.execute(f"SELECT * FROM tests WHERE science = ? and is_confirm = ?", (science, True)).fetchall()[-1][0]
+        resp = cur.execute(f"select * from test_result where tg_id = ? and test_id = ?", (tg_id, test_id))
+        return resp.fetchone()
+
+    async def select_test(self, science):
+        conn = await self.connect
+        cur = conn.cursor()
+        resp = cur.execute(f"SELECT * FROM tests WHERE science = ? and is_confirm = ?", (science, True)).fetchall()
+        if resp:
+            return resp[-1]
+        return False
+
+    async def select_question(self, test_id, number):
+        conn = await self.connect
+        cur = conn.cursor()
+        resp = cur.execute("""
+            SELECT * 
+            FROM test_questions
+            INNER JOIN test_questions_test
+            ON test_questions.id = test_questions_test.testquestion_id
+            WHERE test_questions_test.test_id = ? 
+            AND test_questions.number_question = ?
+            """, (test_id, number))
+        return resp.fetchone()
+
+    async def add_test_result(self, test_id, tg_id, language, fullname, phone_number, region, district, school_number, science, responses, result_time):
+        conn = await self.connect
+        cur = conn.cursor()
+        sql_query = ("INSERT INTO test_result (tg_id, language, fullname, phone_number, region, district, "
+                     "school_number, science, responses, result_time, test_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
+                     "?);")
+        cur.execute(sql_query, (tg_id, language, fullname, phone_number, region, district, school_number, science, responses, result_time, test_id))
+        conn.commit()
+
+
+

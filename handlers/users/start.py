@@ -5,7 +5,7 @@ from aiogram.types import ReplyKeyboardRemove
 
 from data.config import ADMINS
 from filters import IsPrivate
-from keyboards.default import language_markup, menu_markup
+from keyboards.default import language_markup, menu_markup, menu_test_ru, menu_test_uz
 from loader import dp, db
 from states import RegisterStatesGroup
 
@@ -20,10 +20,10 @@ async def bot_start(message: types.Message, state: FSMContext):
     if user:
         if user[2] == 'uzbek':
             await message.answer("✅ Siz muvaffaqiyatli ro'yxatdan o'tgansiz.\n"
-                                 "Qayta ro'yxatdan o'tish uchun - /re_register", reply_markup=ReplyKeyboardRemove())
+                                 "Test topshirish uchun quyidagi tugmadan foydalaning 👇", reply_markup=menu_test_uz)
         else:
             await message.answer("✅ Вы успешно зарегистрировались.\n"
-                                 "Чтобы зарегистрироваться снова - /re_register", reply_markup=ReplyKeyboardRemove())
+                                 "Используйте кнопку ниже, чтобы пройти тест 👇", reply_markup=menu_test_ru)
         await state.finish()
         return
     await message.answer(f"Assalomu alaykum! \"Fan javohirlari\" loyihasining rasmiy botiga xush kelibsiz. "

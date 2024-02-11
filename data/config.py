@@ -62,3 +62,13 @@ sciences_ru = [
     "ИСТОРИЯ",
     "БИОЛОГИЯ",
 ]
+
+sciences_dict = {
+    "РОДНОЙ ЯЗЫК": "ONA TILI",
+    "АНГЛИЙСКИЙ ЯЗЫК": "INGLIZ TILI",
+    "МАТЕМАТИКА": "MATEMATIKA",
+    "ФИЗИКА": "FIZIKA",
+    "ХИМИЯ": "KIMYO",
+    "ИСТОРИЯ": "TARIX",
+    "БИОЛОГИЯ": "BIOLOGIYA",
+}

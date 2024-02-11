@@ -7,7 +7,7 @@ from aiogram.types import ContentType, ReplyKeyboardRemove
 from data.config import regions_uz, regions_ru, sciences_uz, sciences_ru
 from keyboards.default import phone_ru_markup, phone_uz_markup, language_markup, region_uz_markup, region_ru_markup, \
     district_uz_markup, district_ru_markup, back_uz_button, back_ru_button, sciences_uz_markup, sciences_ru_markup, \
-    make_lessons_uz_markup, make_lessons_ru_markup
+    make_lessons_uz_markup, make_lessons_ru_markup, menu_test_uz, menu_test_ru
 from loader import dp, db
 from states import RegisterStatesGroup
 
@@ -65,9 +65,15 @@ async def send_phone(msg: types.Message, state: FSMContext):
     data = await state.get_data()
     language = data.get('language')
     if language == 'uzbek':
+        if await db.select_user_phone(msg.contact.phone_number):
+            await msg.reply(text="Ushbu raqam ro’yxatga olingan")
+            return
         info = "O’zbekistonning qaysi hududidansiz?"
         markup = region_uz_markup
     else:
+        if await db.select_user_phone(msg.contact.phone_number):
+            await msg.reply(text="Этот номер зарегистрирован")
+            return
         info = "В каком регионе Узбекистана вы проживаете?"
         markup = region_ru_markup
     await msg.answer(info, reply_markup=markup)
@@ -310,8 +316,11 @@ async def send_science(msg: types.Message, state: FSMContext):
         if msg.text not in sciences_uz:
             await msg.answer("‼️ Iltimos, quyidagi tugmalardan foydalaning!", reply_markup=sciences_uz_markup)
             return
-        info = ("Tabriklaymiz! Siz ro’yxatdan muvaffaqiyatli o’tdingiz. Loyiha yangiliklari haqida boxabar bo'lib "
-                "turish uchun kanalimizga a'zo bo'ling 👉 https://t.me/FanJavohirlari")
+        info = ("Tabriklaymiz! Siz ro’yxatdan muvaffaqiyatli o’tdingiz.\n\n"
+                "Loyiha yangiliklari haqida boxabar bo'lib "
+                "turish uchun kanalimizga a'zo bo'ling 👉 https://t.me/FanJavohirlari\n\n"
+                "Test topshirib ko’rish uchun quyidagi tugmani bosing.")
+        markup = menu_test_uz
     else:
         if msg.text == '⬅️ Назад':
             await msg.answer("По каким предметам вы будете участвовать в онлайн-занятиях? (Можно выбрать до 3-х "
@@ -323,9 +332,12 @@ async def send_science(msg: types.Message, state: FSMContext):
         if msg.text not in sciences_ru:
             await msg.answer("‼️ Пожалуйста, используйте кнопки ниже!", reply_markup=sciences_ru_markup)
             return
-        info = ("Поздравляем! Вы успешно зарегистрировались. Подпишитесь на наш канал, чтобы быть в курсе новостей "
-                "проекта 👉 https://t.me/FanJavohirlari")
-    await msg.answer(info, reply_markup=ReplyKeyboardRemove())
+        info = ("Поздравляем! Вы успешно зарегистрировались.\n\n"
+                "Подпишитесь на наш канал, чтобы быть в курсе новостей "
+                "проекта 👉 https://t.me/FanJavohirlari\n\n"
+                "Чтобы попробовать пройти тест, нажмите кнопку ниже.")
+        markup = menu_test_ru
+    await msg.answer(info, reply_markup=markup)
     await db.add_or_update_user(tg_id=msg.from_user.id, **data)
     await state.reset_state()
     await state.finish()

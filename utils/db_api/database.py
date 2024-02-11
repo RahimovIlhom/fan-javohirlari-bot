@@ -79,7 +79,7 @@ class Database:
             """, (test_id, number))
         return resp.fetchone()
 
-    async def add_test_result(self, test_id, tg_id, language, fullname, phone_number, region, district, school_number, science, responses, result_time):
+    async def add_test_result(self, test_id, tg_id, language, fullname, phone_number, region, district, school_number, science, responses, result_time, *args, **kwargs):
         conn = await self.connect
         cur = conn.cursor()
         sql_query = ("INSERT INTO test_result (tg_id, language, fullname, phone_number, region, district, "
@@ -88,5 +88,74 @@ class Database:
         cur.execute(sql_query, (tg_id, language, fullname, phone_number, region, district, school_number, science, responses, result_time, test_id))
         conn.commit()
 
+    async def select_science_tests(self, science):
+        conn = await self.connect
+        cur = conn.cursor()
+        resp = cur.execute("select * from tests where science = ?", (science, )).fetchall()
+        if resp:
+            return resp[::-1]
+        return False
 
+    async def select_all_tests(self):
+        conn = await self.connect
+        cur = conn.cursor()
+        resp = cur.execute("select * from tests").fetchall()
+        if resp:
+            return resp[::-1]
+        return False
 
+    async def select_questions_test_id(self, test_id):
+        conn = await self.connect
+        cur = conn.cursor()
+        resp = cur.execute("""
+                    SELECT * 
+                    FROM test_questions
+                    INNER JOIN test_questions_test
+                    ON test_questions.id = test_questions_test.testquestion_id
+                    WHERE test_questions_test.test_id = ?
+                    """, (test_id,))
+        return resp.fetchall()
+
+    async def add_test(self, science, time_continue, count, *args, **kwargs):
+        conn = await self.connect
+        cur = conn.cursor()
+        cur.execute("insert into tests (science, create_time, time_continue, questions_count, is_confirm) "
+                    "values (?, ?, ?, ?, ?);",
+                    (science, datetime.datetime.now().date(), time_continue, count, False))
+        conn.commit()
+
+    async def select_test_id(self, test_id):
+        conn = await self.connect
+        cur = conn.cursor()
+        print(cur.execute("PRAGMA table_info(tests)").fetchall())
+        resp = cur.execute(f"SELECT * FROM tests WHERE id = ?", (test_id, ))
+        return resp.fetchone()
+
+    async def delete_test(self, test_id):
+        conn = await self.connect
+        cur = conn.cursor()
+        cur.execute(f"DELETE FROM tests WHERE id = ?", (test_id,))
+        conn.commit()
+
+    async def add_question_test(self, number_question, question_uz, question_ru, true_response, test_id, *args,
+                                **kwargs):
+        conn = await self.connect
+        cur = conn.cursor()
+
+        if int(kwargs.get('quantity')) >= number_question:
+            cur.execute("update tests set is_confirm = ? where id = ?", (True, test_id))
+            conn.commit()
+
+        # TestQuestions jadvaliga yangi ma'lumotni qo'shish
+        cur.execute(
+            "INSERT INTO test_questions (number_question, question_uz, question_ru, true_response) VALUES (?, ?, ?, ?);",
+            (number_question, question_uz, question_ru, true_response)
+        )
+
+        # TestQuestions va Tests jadvallarini bog'lash
+        cur.execute(
+            "INSERT INTO test_questions_test (testquestion_id, test_id) VALUES (?, ?);",
+            (cur.lastrowid, test_id)
+        )
+
+        conn.commit()

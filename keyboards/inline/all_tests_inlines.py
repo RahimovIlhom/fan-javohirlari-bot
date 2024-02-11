@@ -51,3 +51,18 @@ async def create_edit_test_markup(test_id):
         callback_data=await make_callback(test_id, update='back')
     ))
     return markup
+
+
+async def create_questions_markup(questions):
+    markup = InlineKeyboardMarkup(row_width=2)
+    for ques in questions:
+        markup.insert(InlineKeyboardButton(
+            text=f"{ques[1]}-savol",
+            callback_data=f"{ques[0]}"
+        ))
+    markup.row(InlineKeyboardButton(
+        text="⬅️ Orqaga",
+        callback_data='back',
+    ))
+    return markup
+

@@ -158,3 +158,16 @@ class Database:
         )
 
         conn.commit()
+
+    async def update_question_test(self, question_id, question_uz, question_ru, true_response, *args, **kwargs):
+        conn = await self.connect
+        cur = conn.cursor()
+        cur.execute("update test_questions set question_uz = ?, question_ru = ?, true_response = ? where id = ?",
+                    (question_uz, question_ru, true_response, question_id))
+        conn.commit()
+
+    async def select_question_id(self, ques_id):
+        conn = await self.connect
+        cur = conn.cursor()
+        resp = cur.execute(f"SELECT * FROM test_questions WHERE id = ?", (ques_id,))
+        return resp.fetchone()

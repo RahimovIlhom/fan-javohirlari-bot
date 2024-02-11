@@ -8,7 +8,8 @@ from data.config import ADMINS, sciences_uz
 from filters import IsPrivate
 from keyboards.default import menu_markup, sciences_uz_markup
 from keyboards.default.admin_buttons import tests_markup
-from keyboards.inline import create_all_tests_markup, test_callback_data, create_edit_test_markup, variants
+from keyboards.inline import create_all_tests_markup, test_callback_data, create_edit_test_markup, variants, \
+    create_questions_markup, create_edit_question_markup, question_callback_data
 from loader import dp, db, bot
 from states import AddQuestionTestStatesGroup, CreateTestStatesGroup
 from utils.misc.write_excel import write_data_excel
@@ -114,13 +115,11 @@ async def choice_science_admin(msg: types.Message, state: FSMContext):
                          f"Test qo'shish uchun \"⬅️ Orqaga\" tugmasini borib so'ng,\n"
                          f"\"Yangi test ochish\" tugmasidan foydalaning!")
         return
-    message = await msg.answer("Ajoyib, testni tanlab unga savol qo'shishingiz, tahrirlashingiz yoki o'chirishingiz "
-                               "mumkin.", reply_markup=ReplyKeyboardRemove())
+    await msg.answer("Ajoyib, testni tanlab unga savol qo'shishingiz, tahrirlashingiz yoki o'chirishingiz "
+                     "mumkin.", reply_markup=ReplyKeyboardRemove())
     await msg.answer(f"{msg.text} fani bo'yicha testlar: ", reply_markup=await create_all_tests_markup(msg.text))
     await state.set_data({'science': msg.text})
     await AddQuestionTestStatesGroup.next()
-    time.sleep(3)
-    await message.delete()
 
 
 @dp.callback_query_handler(text='back', state=AddQuestionTestStatesGroup.test, user_id=ADMINS)
@@ -155,7 +154,7 @@ async def edit_test(call: types.CallbackQuery, callback_data: dict, state: FSMCo
         await AddQuestionTestStatesGroup.question_uz.set()
         return
     elif action == 'edit':
-        await edit_test(call, test_id, state)
+        await edit_question(call, test_id, state)
         await AddQuestionTestStatesGroup.next()
         return
     test_info = await db.select_test_id(test_id)
@@ -175,6 +174,60 @@ async def add_question(call, test_id, state, *args, **kwargs):
     await call.message.answer(
         f"{data.get('science')} fani testi uchun {number}-savolning o'zbekcha variantini kiriting:")
     await AddQuestionTestStatesGroup.next()
+
+
+async def edit_question(call, test_id, state, *args, **kwargs):
+    data = await state.get_data()
+    all_questions = await db.select_questions_test_id(test_id)
+    markup = await create_questions_markup(all_questions)
+    await state.update_data({'test_id': test_id})
+    await call.message.edit_text(f"{data.get('science')} fani testining qaysi savolini tahrirlamoqchisiz?",
+                                 reply_markup=markup)
+
+
+@dp.callback_query_handler(question_callback_data.filter(), state=AddQuestionTestStatesGroup.update)
+async def choice_set_question(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
+    ques_id = callback_data.get('ques_id')
+    action = callback_data.get('update')
+    data = await state.get_data()
+    if action == 'back':
+        all_questions = await db.select_questions_test_id(data.get('test_id'))
+        markup = await create_questions_markup(all_questions)
+        await call.message.edit_text(f"{data.get('science')} fani testining qaysi savolini tahrirlamoqchisiz?",
+                                     reply_markup=markup)
+        return
+    elif action == 'edit':
+        await call.message.delete()
+        question = await db.select_question_id(ques_id)
+        await state.update_data({'question_id': ques_id, 'number_question': question[1]})
+        await call.message.answer(
+            f"{data.get('science')} fani testi uchun {question[1]}-savolning o'zbekcha variantini kiriting:")
+        await AddQuestionTestStatesGroup.next()
+
+
+@dp.callback_query_handler(text='back', state=AddQuestionTestStatesGroup.update)
+async def choice_set_question(call: types.CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    test_id = data.get('test_id')
+    test_info = await db.select_test_id(test_id)
+    all_tests = await db.select_questions_test_id(test_id)
+    await state.update_data({'tests_count': len(all_tests), 'quantity': test_info[4]})
+    await call.message.edit_text(f"{test_info[1]} fani {test_info[2]} testi uchun amalni tanlang:\n"
+                                 f"Testlar soni: {len(all_tests)}/{test_info[4]}{'✅' if len(all_tests) >= test_info[4] else ''}",
+                                 reply_markup=await create_edit_test_markup(test_id))
+    await AddQuestionTestStatesGroup.test.set()
+
+
+@dp.callback_query_handler(state=AddQuestionTestStatesGroup.update)
+async def choice_set_question(call: types.CallbackQuery, state: FSMContext):
+    question = await db.select_question_id(call.data)
+    info = (f"{question[1]}-savol\n"
+            f"Uz:\n"
+            f"{question[2]}\n"
+            f"Ru:\n"
+            f"{question[3]}\n"
+            f"To'g'ri javob: {question[4]}")
+    await call.message.edit_text(info, reply_markup=await create_edit_question_markup(question[0]))
 
 
 @dp.message_handler(state=AddQuestionTestStatesGroup.question_uz)
@@ -201,12 +254,19 @@ async def send_question_ru(msg: types.Message, state: FSMContext):
 async def send_true_response(call: types.CallbackQuery, state: FSMContext):
     await state.update_data({'true_response': call.data})
     data = await state.get_data()
-    await db.add_question_test(**data)
+    if data.get('question_id'):
+        await db.update_question_test(**data)
+        info = "Savol muvaffaqiyatli o'zgartirildi!"
+    else:
+        await db.add_question_test(**data)
+        info = "Savol muvaffaqiyatli qo'shildi!"
+    await state.reset_data()
     await call.message.delete()
-    await call.message.answer("Savol muvaffaqiyatli qo'shildi!")
+    await call.message.answer(info)
     test_id = data.get('test_id')
     test_info = await db.select_test_id(test_id)
     all_tests = await db.select_questions_test_id(test_id)
+    await state.update_data({'tests_count': len(all_tests), 'quantity': test_info[4]})
     await call.message.answer(f"{test_info[1]} fani {test_info[2]} testi uchun amalni tanlang:\n"
                               f"Testlar soni: {len(all_tests)}/{data.get('quantity')}"
                               f"{'✅' if len(all_tests) >= data.get('quantity') else ''}",

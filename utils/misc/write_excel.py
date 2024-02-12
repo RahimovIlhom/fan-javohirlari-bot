@@ -2,11 +2,11 @@ import xlsxwriter
 import os
 
 
-async def write_data_excel(columns, data):
+async def write_data_excel(columns, data, file_path='data'):
     directory_path = 'data/users'
     os.makedirs(directory_path, exist_ok=True)
 
-    excel_file_path = os.path.join(directory_path, 'data.xlsx')
+    excel_file_path = os.path.join(directory_path, file_path+'.xlsx')
     workbook = xlsxwriter.Workbook(excel_file_path)
     sheet = workbook.add_worksheet()
 
@@ -23,5 +23,4 @@ async def write_data_excel(columns, data):
 
     workbook.close()
 
-    print(f'Ma\'lumotlar {excel_file_path} fayliga yozildi.')
-
+    # print(f'Ma\'lumotlar {excel_file_path} fayliga yozildi.')

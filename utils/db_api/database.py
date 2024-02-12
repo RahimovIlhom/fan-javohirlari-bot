@@ -66,6 +66,14 @@ class Database:
             return resp[-1]
         return False
 
+    async def select_tests(self, science):
+        conn = await self.connect
+        cur = conn.cursor()
+        resp = cur.execute(f"SELECT * FROM tests WHERE science = ? and is_confirm = ?", (science, True)).fetchall()
+        if resp:
+            return resp
+        return False
+
     async def select_question(self, test_id, number):
         conn = await self.connect
         cur = conn.cursor()
@@ -171,3 +179,16 @@ class Database:
         cur = conn.cursor()
         resp = cur.execute(f"SELECT * FROM test_questions WHERE id = ?", (ques_id,))
         return resp.fetchone()
+
+    async def select_test_result_column_names(self, *args, **kwargs):
+        conn = await self.connect
+        cur = conn.cursor()
+        resp = cur.execute("select * from test_result")
+        names = tuple(map(lambda x: x[0], resp.description))
+        return names
+
+    async def select_test_result(self, test_id):
+        conn = await self.connect
+        cur = conn.cursor()
+        resp = cur.execute(f"SELECT * FROM test_result WHERE test_id = ?", (test_id,))
+        return resp.fetchall()

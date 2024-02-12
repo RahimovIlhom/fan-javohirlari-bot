@@ -128,7 +128,7 @@ async def start_test(call: types.CallbackQuery, state: FSMContext):
     else:
         test_info = (f"Вопрос 1.\n\n"
                      f"{question[3]}")
-    await call.message.edit_text(test_info, reply_markup=await make_keyboard_test_responses())
+    await call.message.edit_text(test_info, reply_markup=await make_keyboard_test_responses(data.get('language')))
     await TestStatesGroup.next()
 
 
@@ -202,7 +202,8 @@ async def select_response(call: types.CallbackQuery, callback_data: dict, state:
     else:
         test_info = (f"Вопрос {number + 1}.\n\n"
                      f"{question[3]}")
-    await call.message.edit_text(test_info, reply_markup=await make_keyboard_test_responses())
+    await call.message.edit_text(test_info,
+                                 reply_markup=await make_keyboard_test_responses(data.get('language')))
 
 
 @dp.message_handler(state=TestStatesGroup.execution, content_types=ContentType.ANY)

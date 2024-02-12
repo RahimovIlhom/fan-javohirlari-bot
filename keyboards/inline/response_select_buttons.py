@@ -2,10 +2,14 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from .callback_data import callback_data
 
 
-async def make_keyboard_test_responses():
+async def make_keyboard_test_responses(language):
     markup = InlineKeyboardMarkup(row_width=2)
-    markup.insert(InlineKeyboardButton(text="A", callback_data=callback_data.new(response='1')))
-    markup.insert(InlineKeyboardButton(text="B", callback_data=callback_data.new(response='2')))
-    markup.insert(InlineKeyboardButton(text="C", callback_data=callback_data.new(response='3')))
-    markup.insert(InlineKeyboardButton(text="D", callback_data=callback_data.new(response='4')))
+    if language == 'uzbek':
+        responses = ['A', 'B', 'C', 'D']
+    else:
+        responses = ['А', 'Б', 'В', 'Г']
+    count = 1
+    for i in responses:
+        markup.insert(InlineKeyboardButton(text=i, callback_data=callback_data.new(response=f'{count}')))
+        count += 1
     return markup

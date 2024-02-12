@@ -1,5 +1,3 @@
-import time
-
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.types import InputFile, ReplyKeyboardRemove

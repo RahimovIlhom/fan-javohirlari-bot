@@ -254,6 +254,7 @@ async def send_question_ru(msg: types.Message, state: FSMContext):
 async def send_true_response(call: types.CallbackQuery, state: FSMContext):
     await state.update_data({'true_response': call.data})
     data = await state.get_data()
+    science = data.get('science')
     if data.get('question_id'):
         await db.update_question_test(**data)
         info = "Savol muvaffaqiyatli o'zgartirildi!"
@@ -266,7 +267,7 @@ async def send_true_response(call: types.CallbackQuery, state: FSMContext):
     test_id = data.get('test_id')
     test_info = await db.select_test_id(test_id)
     all_tests = await db.select_questions_test_id(test_id)
-    await state.update_data({'tests_count': len(all_tests), 'quantity': test_info[4]})
+    await state.update_data({'science': science, 'tests_count': len(all_tests), 'quantity': test_info[4]})
     await call.message.answer(f"{test_info[1]} fani {test_info[2]} testi uchun amalni tanlang:\n"
                               f"Testlar soni: {len(all_tests)}/{data.get('quantity')}"
                               f"{'✅' if len(all_tests) >= data.get('quantity') else ''}",

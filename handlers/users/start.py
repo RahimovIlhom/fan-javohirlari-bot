@@ -38,6 +38,7 @@ async def re_register(msg: types.Message, state: FSMContext):
         return
     user = await db.select_user(msg.from_user.id)
     if user:
+        await state.set_data({'re_register': True})
         await msg.answer("Iltimos, tilni tanlang.\n\n"
                          "Пожалуйста, выберите язык.", reply_markup=language_markup)
         await state.set_state(RegisterStatesGroup.language)

@@ -65,15 +65,17 @@ async def send_phone(msg: types.Message, state: FSMContext):
     data = await state.get_data()
     language = data.get('language')
     if language == 'uzbek':
-        if await db.select_user_phone(msg.contact.phone_number):
-            await msg.reply(text="Ushbu raqam ro’yxatga olingan")
-            return
+        if data.get('re_register') is None:
+            if await db.select_user_phone(msg.contact.phone_number):
+                await msg.reply(text="Ushbu raqam ro’yxatga olingan")
+                return
         info = "O’zbekistonning qaysi hududidansiz?"
         markup = region_uz_markup
     else:
-        if await db.select_user_phone(msg.contact.phone_number):
-            await msg.reply(text="Этот номер зарегистрирован")
-            return
+        if data.get('re_register') is None:
+            if await db.select_user_phone(msg.contact.phone_number):
+                await msg.reply(text="Этот номер зарегистрирован")
+                return
         info = "В каком регионе Узбекистана вы проживаете?"
         markup = region_ru_markup
     await msg.answer(info, reply_markup=markup)

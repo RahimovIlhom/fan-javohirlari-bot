@@ -115,7 +115,7 @@ async def choice_science_admin(msg: types.Message, state: FSMContext):
         return
     if await db.select_science_tests(msg.text) is False:
         await msg.answer(f"Hozirda {msg.text} fanidan testlar mavjud emas!\n"
-                         f"Test qo'shish uchun \"⬅️ Orqaga\" tugmasini borib so'ng,\n"
+                         f"Test qo'shish uchun \"⬅️ Orqaga\" tugmasini bosib so'ng,\n"
                          f"\"Yangi test ochish\" tugmasidan foydalaning!")
         return
     await msg.answer("Ajoyib, testni tanlab unga savol qo'shishingiz, tahrirlashingiz yoki o'chirishingiz "

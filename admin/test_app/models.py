@@ -1,10 +1,16 @@
 from django.db import models
 
 
+languages = (
+    ('uzbek', 'uzbek'),
+    ('russian', 'russian')
+)
+
+
 class Test(models.Model):
     science = models.CharField(max_length=20)
     create_time = models.DateField(auto_now_add=True)
-    time_continue = models.IntegerField(default=120)
+    language = models.CharField(max_length=7, choices=languages, default=languages[0])
     questions_count = models.IntegerField(default=10)
     is_confirm = models.BooleanField(default=False)
 
@@ -12,13 +18,13 @@ class Test(models.Model):
         db_table = 'tests'
 
     def __str__(self):
-        return f"{self.science} {self.create_time} testi"
+        return f"{self.science} {self.create_time} - {self.language} testi"
 
 
 class TestQuestion(models.Model):
     number_question = models.IntegerField(null=True)
-    question_uz = models.CharField(max_length=500)
-    question_ru = models.CharField(max_length=500)
+    question_uz = models.CharField(max_length=500, null=True, blank=True)
+    question_ru = models.CharField(max_length=500, null=True, blank=True)
     true_response = models.IntegerField()
     test = models.ManyToManyField(Test, related_name='test_questions')
 

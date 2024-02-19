@@ -1,10 +1,10 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-from aiogram.types import InputFile, ReplyKeyboardRemove
+from aiogram.types import InputFile, ReplyKeyboardRemove, ContentType
 
 from data.config import ADMINS, sciences_uz
 from filters import IsPrivate
-from keyboards.default import menu_markup, sciences_uz_markup
+from keyboards.default import menu_markup, sciences_uz_markup, language_markup
 from keyboards.default.admin_buttons import tests_markup
 from keyboards.inline import create_all_tests_markup, test_callback_data, create_edit_test_markup, variants, \
     create_questions_markup, create_edit_question_markup, question_callback_data
@@ -62,26 +62,31 @@ async def choice_science_test(msg: types.Message, state: FSMContext):
         await msg.answer("Iltimos, tugmalardan foydalaning!")
         return
     await state.set_data({'science': msg.text})
-    await msg.answer("Test davomiyligini kiriting (minutlarda):", reply_markup=ReplyKeyboardRemove())
+    await msg.answer("Test tilini tanlang:", reply_markup=language_markup)
     await CreateTestStatesGroup.next()
 
 
-@dp.message_handler(state=CreateTestStatesGroup.time_continue, user_id=ADMINS)
+@dp.message_handler(state=CreateTestStatesGroup.language, text=['O’zbek tili', 'Русский язык'])
 async def time_continue_test(msg: types.message, state: FSMContext):
-    if str(msg.text).isdigit():
-        await state.update_data({'time_continue': int(msg.text)})
-        await msg.answer("Savollar sonini kiriting: ")
-        await CreateTestStatesGroup.next()
+    if msg.text == 'O’zbek tili':
+        language = 'uzbek'
     else:
-        await msg.answer("Test davomiyligini kiritishda xatolik!\n"
-                         "Qayta kiriting")
+        language = 'russian'
+    await state.update_data({'language': language})
+    await msg.answer("Savollar sonini kiriting: ", reply_markup=ReplyKeyboardRemove())
+    await CreateTestStatesGroup.next()
+
+
+@dp.message_handler(state=CreateTestStatesGroup.language, content_types=ContentType.ANY)
+async def send_error_test_language(msg: types.Message, state: FSMContext):
+    await msg.answer("❗️ Quyidagi tugmalardan foydalaning!")
 
 
 @dp.message_handler(state=CreateTestStatesGroup.count, user_id=ADMINS)
 async def time_continue_test(msg: types.message, state: FSMContext):
     if str(msg.text).isdigit():
         data = await state.get_data()
-        await db.add_test(data.get('science'), data.get('time_continue'), int(msg.text))
+        await db.add_test(data.get('science'), data.get('language'), int(msg.text))
         await msg.answer("✅ Yangi test ochildi.\n"
                          "\"Fan bo'yicha testlar\" bo'limida ko'rishingiz va savollar qo'shishingiz mumkin!",
                          reply_markup=tests_markup)

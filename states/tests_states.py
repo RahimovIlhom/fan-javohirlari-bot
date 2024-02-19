@@ -12,5 +12,5 @@ class AddQuestionTestStatesGroup(StatesGroup):
 
 class CreateTestStatesGroup(StatesGroup):
     science = State()
-    time_continue = State()
+    language = State()
     count = State()

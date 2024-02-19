@@ -72,3 +72,6 @@ sciences_dict = {
     "ИСТОРИЯ": "TARIX",
     "БИОЛОГИЯ": "BIOLOGIYA",
 }
+
+responses_uz = ['A', 'B', 'C', 'D']
+responses_ru = ['А', 'Б', 'В', 'Г']

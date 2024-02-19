@@ -2,10 +2,10 @@ import datetime
 import time
 
 from aiogram import types
-from aiogram.types import ReplyKeyboardRemove, ContentType
+from aiogram.types import ReplyKeyboardRemove, ContentType, InlineKeyboardMarkup
 from aiogram.dispatcher import FSMContext
 
-from data.config import sciences_uz, sciences_ru, sciences_dict
+from data.config import sciences_uz, sciences_ru, sciences_dict, responses_uz, responses_ru
 from filters import IsPrivate
 from keyboards.default import sciences_uz_markup, sciences_ru_markup, menu_test_ru, menu_test_uz
 from keyboards.inline import start_test_markup_uz, start_test_markup_ru, make_keyboard_test_responses, callback_data
@@ -69,9 +69,7 @@ async def choice_test_science(msg: types.Message, state: FSMContext):
             return
         success = "✅ Juda yaxshi!"
         info = (f"{msg.text} fani uchun test.\n\n"
-                f"📝 Savollar soni: {test_app[4]}\n"
-                f"⏰ Test yechish vaqti: {test_app[3]} daqiqa\n"
-                f"🏁 Tugash vaqti: {(datetime.datetime.now() + datetime.timedelta(minutes=test_app[3])).time().replace(microsecond=0)}\n"
+                f"📝 Savollar soni: {test_app[4]}\n\n"
                 f"Testni boshlash uchun \"👨‍💻 Testni boshlash\" tugmasini bosing!")
         markup = start_test_markup_uz
     else:
@@ -89,9 +87,7 @@ async def choice_test_science(msg: types.Message, state: FSMContext):
             return
         success = "✅ Очень хорошо!"
         info = (f"Тест по предмету {msg.text}\n\n"
-                f"📝 Количество вопросов: {test_app[4]}\n"
-                f"⏰ Время прохождения теста: {test_app[3]} минут\n"
-                f"🏁 Время завершения: {(datetime.datetime.now() + datetime.timedelta(minutes=test_app[3])).time().replace(microsecond=0)}\n"
+                f"📝 Количество вопросов: {test_app[4]}\n\n"
                 f"Нажмите кнопку \"👨‍💻 Начать тест\" для начала тестирования!")
         markup = start_test_markup_ru
     await state.update_data({'test_id': test_app[0], 'questions_count': test_app[4], 'time_continue': test_app[3]})
@@ -152,30 +148,22 @@ async def select_response(call: types.CallbackQuery, callback_data: dict, state:
     number = data.get('question_number')
     count = data.get('questions_count')
     user_resp = data.get('user_responses')
+    current_resp = callback_data.get('response')
     responses = data.get('responses')
+    markup = InlineKeyboardMarkup(inline_keyboard=None)
     if user_resp:
-        await state.update_data({'user_responses': user_resp + callback_data.get('response')})
+        await state.update_data({'user_responses': user_resp + current_resp})
     else:
-        await state.update_data({'user_responses': f"{callback_data.get('response')}"})
+        await state.update_data({'user_responses': f"{current_resp}"})
+    if data.get('language') == 'uzbek':
+        old_message_text = call.message.text + f"\n\nSizning javobingiz: {responses_uz[int(current_resp)-1]}"
+    else:
+        old_message_text = call.message.text + f"\n\nВаш ответ: {responses_ru[int(current_resp)-1]}"
+    await call.message.edit_text(old_message_text, reply_markup=markup)
     if number >= count:
-        await call.message.delete()
         user = await db.select_user(call.from_user.id)
-        if datetime.datetime.now() - datetime.timedelta(minutes=data.get('time_continue')) > data.get('start_time'):
-            if data.get('language') == 'uzbek':
-                await call.message.answer("❗️ Test vaqti tugadi!\n"
-                                          "Shuning uchun test javoblaringiz qabul qilinmadi.",
-                                          reply_markup=menu_test_uz)
-            else:
-                await call.message.answer("❗️ Время теста истекло!\n"
-                                          "Ваши ответы не были приняты по причине отсутствия.",
-                                          reply_markup=menu_test_ru)
-            await db.add_test_result(test_id, call.from_user.id, data.get('language'), *user[3:8], data.get('science'),
-                                     '0' * count, datetime.datetime.now())
-            await state.reset_data()
-            await state.finish()
-            return
         db_responses = ''.join(
-            map(lambda x, y: '1' if x == y else '0', responses, user_resp + callback_data.get('response')))
+            map(lambda x, y: '1' if x == y else '0', responses, user_resp + current_resp))
         await db.add_test_result(test_id, call.from_user.id, data.get('language'), *user[3:8], data.get('science'),
                                  db_responses, datetime.datetime.now())
         if data.get('language') == 'uzbek':
@@ -202,8 +190,8 @@ async def select_response(call: types.CallbackQuery, callback_data: dict, state:
     else:
         test_info = (f"Вопрос {number + 1}.\n\n"
                      f"{question[3]}")
-    await call.message.edit_text(test_info,
-                                 reply_markup=await make_keyboard_test_responses(data.get('language')))
+    await call.message.answer(test_info,
+                              reply_markup=await make_keyboard_test_responses(data.get('language')))
 
 
 @dp.message_handler(state=TestStatesGroup.execution, content_types=ContentType.ANY)

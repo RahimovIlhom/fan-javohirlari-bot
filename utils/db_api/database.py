@@ -124,12 +124,12 @@ class Database:
                     """, (test_id,))
         return resp.fetchall()
 
-    async def add_test(self, science, time_continue, count, *args, **kwargs):
+    async def add_test(self, science, language, count, *args, **kwargs):
         conn = await self.connect
         cur = conn.cursor()
-        cur.execute("insert into tests (science, create_time, time_continue, questions_count, is_confirm) "
+        cur.execute("insert into tests (science, create_time, language, questions_count, is_confirm) "
                     "values (?, ?, ?, ?, ?);",
-                    (science, datetime.datetime.now().date(), time_continue, count, False))
+                    (science, datetime.datetime.now().date(), language, count, False))
         conn.commit()
 
     async def select_test_id(self, test_id):

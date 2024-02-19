@@ -55,13 +55,19 @@ class Database:
         conn = await self.connect
         cur = conn.cursor()
         test_id = cur.execute(f"SELECT * FROM tests WHERE science = ? and is_confirm = ?", (science, True)).fetchall()[-1][0]
-        resp = cur.execute(f"select * from test_result where tg_id = ? and test_id = ?", (tg_id, test_id))
+        resp = cur.execute(f"SELECT * FROM test_result WHERE tg_id = ? and test_id = ?", (tg_id, test_id))
         return resp.fetchone()
 
-    async def select_test(self, science):
+    async def select_test(self, science, language=None):
         conn = await self.connect
         cur = conn.cursor()
-        resp = cur.execute(f"SELECT * FROM tests WHERE science = ? and is_confirm = ?", (science, True)).fetchall()
+        if language is None:
+            sql_query = f"SELECT * FROM tests WHERE science = ? and is_confirm = ?"
+            resp = cur.execute(sql_query, (science, True)).fetchall()
+        else:
+            sql_query = f"SELECT * FROM tests WHERE science = ? and is_confirm = ? and language = ?"
+            resp = cur.execute(sql_query,
+                               (science, True, language)).fetchall()
         if resp:
             return resp[-1]
         return False

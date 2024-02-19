@@ -93,7 +93,7 @@ async def time_continue_test(msg: types.message, state: FSMContext):
         await state.reset_data()
         await state.finish()
     else:
-        await msg.answer("Test davomiyligini kiritishda xatolik!\n"
+        await msg.answer("Test savollar sonini kiritishda xatolik!\n"
                          "Qayta kiriting")
 
 
@@ -137,6 +137,8 @@ async def edit_test(call: types.CallbackQuery, callback_data: dict, state: FSMCo
     test_id = callback_data.get('test_id')
     action = callback_data.get('update')
     data = await state.get_data()
+    test_info = await db.select_test_id(test_id)
+    await state.update_data({'language': test_info[3]})
     if action == 'back':
         await call.message.edit_text(f"{data.get('science')} fani bo'yicha testlar: ",
                                      reply_markup=await create_all_tests_markup(data.get('science')))
@@ -154,18 +156,18 @@ async def edit_test(call: types.CallbackQuery, callback_data: dict, state: FSMCo
         return
     elif action == "add":
         await add_question(call, test_id, state)
-        await AddQuestionTestStatesGroup.question_uz.set()
+        await AddQuestionTestStatesGroup.question.set()
         return
     elif action == 'edit':
         await edit_question(call, test_id, state)
         await AddQuestionTestStatesGroup.next()
         return
-    test_info = await db.select_test_id(test_id)
     all_tests = await db.select_questions_test_id(test_id)
     await state.update_data({'tests_count': len(all_tests), 'quantity': test_info[4]})
-    await call.message.edit_text(f"{test_info[1]} fani {test_info[2]} testi uchun amalni tanlang:\n"
-                                 f"Testlar soni: {len(all_tests)}/{test_info[4]}{'✅' if len(all_tests) >= test_info[4] else ''}",
-                                 reply_markup=await create_edit_test_markup(test_id))
+    await call.message.edit_text(
+        f"{test_info[1]} fani {test_info[2]} - {test_info[3][:2]} testi uchun amalni tanlang:\n"
+        f"Testlar soni: {len(all_tests)}/{test_info[4]}{'✅' if len(all_tests) >= test_info[4] else ''}",
+        reply_markup=await create_edit_test_markup(test_id))
 
 
 async def add_question(call, test_id, state, *args, **kwargs):
@@ -174,9 +176,12 @@ async def add_question(call, test_id, state, *args, **kwargs):
     number = len(all_questions) + 1
     await state.update_data({'test_id': test_id, 'number_question': number})
     await call.message.delete()
-    await call.message.answer(
-        f"{data.get('science')} fani testi uchun {number}-savolning o'zbekcha variantini kiriting:")
-    await AddQuestionTestStatesGroup.next()
+    if data.get('language') == 'uzbek':
+        word = 'o\'zbek'
+    else:
+        word = 'rus'
+    await call.message.answer(f"{data.get('science')} fani testi uchun {number}-savolni {word} tilida kiriting"
+                              f"(Oxirgi qismda to'g'ri variantni raqam orqali ifodalang):")
 
 
 async def edit_question(call, test_id, state, *args, **kwargs):
@@ -203,8 +208,13 @@ async def choice_set_question(call: types.CallbackQuery, callback_data: dict, st
         await call.message.delete()
         question = await db.select_question_id(ques_id)
         await state.update_data({'question_id': ques_id, 'number_question': question[1]})
+        if data.get('language') == 'uzbek':
+            word = 'o\'zbek'
+        else:
+            word = 'rus'
         await call.message.answer(
-            f"{data.get('science')} fani testi uchun {question[1]}-savolning o'zbekcha variantini kiriting:")
+            f"{data.get('science')} fani testi uchun {question[1]}-savolni {word} tilida kiriting"
+            f"(Oxirgi qismda to'g'ri variantni raqam orqali ifodalang):")
         await AddQuestionTestStatesGroup.next()
 
 
@@ -215,49 +225,47 @@ async def choice_set_question(call: types.CallbackQuery, state: FSMContext):
     test_info = await db.select_test_id(test_id)
     all_tests = await db.select_questions_test_id(test_id)
     await state.update_data({'tests_count': len(all_tests), 'quantity': test_info[4]})
-    await call.message.edit_text(f"{test_info[1]} fani {test_info[2]} testi uchun amalni tanlang:\n"
-                                 f"Testlar soni: {len(all_tests)}/{test_info[4]}{'✅' if len(all_tests) >= test_info[4] else ''}",
-                                 reply_markup=await create_edit_test_markup(test_id))
+    await call.message.edit_text(
+        f"{test_info[1]} fani {test_info[2]} - {test_info[3][:2]} testi uchun amalni tanlang:\n"
+        f"Testlar soni: {len(all_tests)}/{test_info[4]}{'✅' if len(all_tests) >= test_info[4] else ''}",
+        reply_markup=await create_edit_test_markup(test_id))
     await AddQuestionTestStatesGroup.test.set()
 
 
 @dp.callback_query_handler(state=AddQuestionTestStatesGroup.update)
 async def choice_set_question(call: types.CallbackQuery, state: FSMContext):
     question = await db.select_question_id(call.data)
-    info = (f"{question[1]}-savol\n"
-            f"Uz:\n"
-            f"{question[2]}\n"
-            f"Ru:\n"
-            f"{question[3]}\n"
-            f"To'g'ri javob: {question[4]}")
+    data = await state.get_data()
+    if data.get('language') == 'uzbek':
+        info = (f"{question[1]}-savol\n"
+                f"Uz:\n"
+                f"{question[2]}\n"
+                f"To'g'ri javob: {question[4]}")
+    else:
+        info = (f"{question[1]}-savol\n"
+                f"Ru:\n"
+                f"{question[3]}\n"
+                f"To'g'ri javob: {question[4]}")
     await call.message.edit_text(info, reply_markup=await create_edit_question_markup(question[0]))
 
 
-@dp.message_handler(state=AddQuestionTestStatesGroup.question_uz)
+@dp.message_handler(state=AddQuestionTestStatesGroup.question)
 async def send_question_uz(msg: types.Message, state: FSMContext):
     data = await state.get_data()
-    await state.update_data({'question_uz': msg.text})
-    await msg.answer(
-        f"{data.get('science')} fani testi uchun {data.get('number_question')}-savolning ruscha variantini "
-        f"kiriting:")
-    await AddQuestionTestStatesGroup.next()
-
-
-@dp.message_handler(state=AddQuestionTestStatesGroup.question_ru)
-async def send_question_ru(msg: types.Message, state: FSMContext):
-    data = await state.get_data()
-    await state.update_data({'question_ru': msg.text})
-    await msg.answer(
-        f"{data.get('science')} fani testi uchun {data.get('number_question')}-savolning to'g'ri variantini "
-        f"tanlang: ", reply_markup=variants)
-    await AddQuestionTestStatesGroup.next()
-
-
-@dp.callback_query_handler(state=AddQuestionTestStatesGroup.true_response)
-async def send_true_response(call: types.CallbackQuery, state: FSMContext):
-    await state.update_data({'true_response': call.data})
+    true_response = str(msg.text)[-1]
+    if data.get('language') == 'uzbek':
+        await state.update_data({'question_uz': str(msg.text)[:len(msg.text)-1], 'question_ru': 'Mavjud emas'})
+    else:
+        await state.update_data({'question_uz': 'Mavjud emas', 'question_ru': str(msg.text)[:len(msg.text)-1]})
+    if true_response.isdigit() and true_response in ['1', '2', '3', '4']:
+        true_response = int(true_response)
+    else:
+        await msg.answer("‼️ To'g'ri javob kiritishda xatolik, qayta kiriting!")
+        return
+    await state.update_data({'true_response': true_response})
     data = await state.get_data()
     science = data.get('science')
+    language = data.get('language')
     if data.get('question_id'):
         await db.update_question_test(**data)
         info = "Savol muvaffaqiyatli o'zgartirildi!"
@@ -265,14 +273,14 @@ async def send_true_response(call: types.CallbackQuery, state: FSMContext):
         await db.add_question_test(**data)
         info = "Savol muvaffaqiyatli qo'shildi!"
     await state.reset_data()
-    await call.message.delete()
-    await call.message.answer(info)
+    await msg.answer(info)
     test_id = data.get('test_id')
     test_info = await db.select_test_id(test_id)
     all_tests = await db.select_questions_test_id(test_id)
-    await state.update_data({'science': science, 'tests_count': len(all_tests), 'quantity': test_info[4]})
-    await call.message.answer(f"{test_info[1]} fani {test_info[2]} testi uchun amalni tanlang:\n"
-                              f"Testlar soni: {len(all_tests)}/{data.get('quantity')}"
-                              f"{'✅' if len(all_tests) >= data.get('quantity') else ''}",
-                              reply_markup=await create_edit_test_markup(test_id))
+    await state.update_data({'science': science, 'tests_count': len(all_tests),
+                             'quantity': test_info[4], 'language': language})
+    await msg.answer(f"{test_info[1]} fani {test_info[2]} - {test_info[3][:2]} testi uchun amalni tanlang:\n"
+                     f"Testlar soni: {len(all_tests)}/{data.get('quantity')}"
+                     f"{'✅' if len(all_tests) >= data.get('quantity') else ''}",
+                     reply_markup=await create_edit_test_markup(test_id))
     await AddQuestionTestStatesGroup.test.set()

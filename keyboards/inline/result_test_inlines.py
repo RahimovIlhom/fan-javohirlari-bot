@@ -8,7 +8,7 @@ async def day_tests_markup(science):
     tests = await db.select_tests(science)
     for test_app in tests:
         markup.insert(InlineKeyboardButton(
-            text=f"{test_app[2]}",
+            text=f"{test_app[2]} - {test_app[3][:2]}",
             callback_data=test_app[0]
         ))
     markup.row(InlineKeyboardButton(

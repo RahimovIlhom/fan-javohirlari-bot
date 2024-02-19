@@ -59,7 +59,7 @@ async def choice_test_science(msg: types.Message, state: FSMContext):
             await msg.delete()
             await msg.answer("‼️ Iltimos, quyidagi tugmalardan foydalaning!", reply_markup=sciences_uz_markup)
             return
-        test_app = await db.select_test(msg.text)
+        test_app = await db.select_test(msg.text, data.get('language'))
         if test_app is False:
             await msg.answer("Hali test mavjud emas!")
             return
@@ -77,7 +77,7 @@ async def choice_test_science(msg: types.Message, state: FSMContext):
             await msg.delete()
             await msg.answer("‼️ Пожалуйста, используйте кнопки ниже!", reply_markup=sciences_ru_markup)
             return
-        test_app = await db.select_test(sciences_dict.get(msg.text))
+        test_app = await db.select_test(sciences_dict.get(msg.text), data.get('language'))
         if test_app is False:
             await msg.answer("Тест еще не существует!")
             return
@@ -151,15 +151,18 @@ async def select_response(call: types.CallbackQuery, callback_data: dict, state:
     current_resp = callback_data.get('response')
     responses = data.get('responses')
     markup = InlineKeyboardMarkup(inline_keyboard=None)
+    # foydalanuvchini javoblarini saqlash
     if user_resp:
         await state.update_data({'user_responses': user_resp + current_resp})
     else:
         await state.update_data({'user_responses': f"{current_resp}"})
+    # belgilangan javobni ko'rsatish
     if data.get('language') == 'uzbek':
         old_message_text = call.message.text + f"\n\nSizning javobingiz: {responses_uz[int(current_resp)-1]}"
     else:
         old_message_text = call.message.text + f"\n\nВаш ответ: {responses_ru[int(current_resp)-1]}"
     await call.message.edit_text(old_message_text, reply_markup=markup)
+    # test savollari tugaganligini tekshirish
     if number >= count:
         user = await db.select_user(call.from_user.id)
         db_responses = ''.join(

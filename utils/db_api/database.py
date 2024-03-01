@@ -54,7 +54,8 @@ class Database:
     async def select_result_test_user(self, tg_id, science):
         conn = await self.connect
         cur = conn.cursor()
-        test_id = cur.execute(f"SELECT * FROM tests WHERE science = ? and is_confirm = ?", (science, True)).fetchall()[-1][0]
+        test_id = cur.execute(f"SELECT * FROM tests WHERE science = ? and is_confirm = ?",
+                              (science, True)).fetchall()[-1][0]
         resp = cur.execute(f"SELECT * FROM test_result WHERE tg_id = ? and test_id = ?", (tg_id, test_id))
         return resp.fetchone()
 
@@ -150,8 +151,8 @@ class Database:
         cur.execute(f"DELETE FROM tests WHERE id = ?", (test_id,))
         conn.commit()
 
-    async def add_question_test(self, number_question, question_uz, question_ru, true_response, test_id, *args,
-                                **kwargs):
+    async def add_question_test(self, number_question, question_uz, question_ru, true_response, test_id, image_id=None,
+                                *args, **kwargs):
         conn = await self.connect
         cur = conn.cursor()
 
@@ -161,8 +162,9 @@ class Database:
 
         # TestQuestions jadvaliga yangi ma'lumotni qo'shish
         cur.execute(
-            "INSERT INTO test_questions (number_question, question_uz, question_ru, true_response) VALUES (?, ?, ?, ?);",
-            (number_question, question_uz, question_ru, true_response)
+            "INSERT INTO test_questions (number_question, question_uz, question_ru, true_response, image_id) VALUES ("
+            "?, ?, ?, ?, ?);",
+            (number_question, question_uz, question_ru, true_response, image_id)
         )
 
         # TestQuestions va Tests jadvallarini bog'lash
@@ -173,11 +175,13 @@ class Database:
 
         conn.commit()
 
-    async def update_question_test(self, question_id, question_uz, question_ru, true_response, *args, **kwargs):
+    async def update_question_test(self, question_id, question_uz, question_ru, true_response, image_id=None,
+                                   *args, **kwargs):
         conn = await self.connect
         cur = conn.cursor()
-        cur.execute("update test_questions set question_uz = ?, question_ru = ?, true_response = ? where id = ?",
-                    (question_uz, question_ru, true_response, question_id))
+        cur.execute("update test_questions set question_uz = ?, question_ru = ?, true_response = ?, image_id = ? "
+                    "where id = ?",
+                    (question_uz, question_ru, true_response, image_id, question_id))
         conn.commit()
 
     async def select_question_id(self, ques_id):

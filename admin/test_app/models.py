@@ -26,7 +26,8 @@ class TestQuestion(models.Model):
     question_uz = models.CharField(max_length=500, null=True, blank=True)
     question_ru = models.CharField(max_length=500, null=True, blank=True)
     true_response = models.IntegerField()
-    test = models.ManyToManyField(Test, related_name='test_questions')
+    test = models.ManyToManyField(Test, related_name='test_questions', null=True, blank=True)
+    image_id = models.CharField(max_length=100, null=True, blank=True)
 
     class Meta:
         db_table = 'test_questions'
@@ -47,7 +48,7 @@ class TestResult(models.Model):
     science = models.CharField(max_length=20)
     responses = models.CharField(max_length=50)
     result_time = models.DateTimeField(auto_now_add=True)
-    test = models.ForeignKey(Test, on_delete=models.CASCADE)
+    test = models.ForeignKey(Test, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
         db_table = 'test_result'

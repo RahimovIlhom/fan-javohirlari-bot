@@ -4,7 +4,7 @@ from aiogram.types import InputFile, ReplyKeyboardRemove, ContentType
 
 from data.config import ADMINS, sciences_uz
 from filters import IsPrivate
-from keyboards.default import menu_markup, sciences_uz_markup, language_markup
+from keyboards.default import menu_markup, sciences_uz_markup, language_markup, skip_markup
 from keyboards.default.admin_buttons import tests_markup
 from keyboards.inline import create_all_tests_markup, test_callback_data, create_edit_test_markup, variants, \
     create_questions_markup, create_edit_question_markup, question_callback_data
@@ -155,8 +155,8 @@ async def edit_test(call: types.CallbackQuery, callback_data: dict, state: FSMCo
                                      reply_markup=await create_all_tests_markup(data.get('science')))
         return
     elif action == "add":
-        await add_question(call, test_id, state)
-        await AddQuestionTestStatesGroup.question.set()
+        await add_question_image(call, test_id, state)
+        await AddQuestionTestStatesGroup.image.set()
         return
     elif action == 'edit':
         await edit_question(call, test_id, state)
@@ -170,18 +170,41 @@ async def edit_test(call: types.CallbackQuery, callback_data: dict, state: FSMCo
         reply_markup=await create_edit_test_markup(test_id))
 
 
-async def add_question(call, test_id, state, *args, **kwargs):
+async def add_question_image(call, test_id, state, *args, **kwargs):
     data = await state.get_data()
     all_questions = await db.select_questions_test_id(test_id)
     number = len(all_questions) + 1
     await state.update_data({'test_id': test_id, 'number_question': number})
     await call.message.delete()
+    await call.message.answer(f"{data.get('science')} fani testi uchun {number}-savolni rasmini yuboring!",
+                              reply_markup=skip_markup)
+
+
+@dp.message_handler(text="Rasm mavjud emas!", state=AddQuestionTestStatesGroup.image)
+async def add_question_skip_image(message: types.Message, state: FSMContext):
+    data = await state.get_data()
     if data.get('language') == 'uzbek':
         word = 'o\'zbek'
     else:
         word = 'rus'
-    await call.message.answer(f"{data.get('science')} fani testi uchun {number}-savolni {word} tilida kiriting"
-                              f"(Oxirgi qismda to'g'ri variantni raqam orqali ifodalang):")
+    await message.answer(
+        f"{data.get('science')} fani testi uchun {data.get('number_question')}-savolni {word} tilida kiriting"
+        f"(Oxirgi qismda to'g'ri variantni raqam orqali ifodalang):", reply_markup=ReplyKeyboardRemove())
+    await AddQuestionTestStatesGroup.next()
+
+
+@dp.message_handler(state=AddQuestionTestStatesGroup.image, content_types=ContentType.PHOTO)
+async def add_question_text(message: types.Message, state: FSMContext):
+    await state.update_data({'image_id': message.photo[-1].file_id})
+    data = await state.get_data()
+    if data.get('language') == 'uzbek':
+        word = 'o\'zbek'
+    else:
+        word = 'rus'
+    await message.answer(
+        f"{data.get('science')} fani testi uchun {data.get('number_question')}-savolni {word} tilida kiriting"
+        f"(Oxirgi qismda to'g'ri variantni raqam orqali ifodalang):", reply_markup=ReplyKeyboardRemove())
+    await AddQuestionTestStatesGroup.next()
 
 
 async def edit_question(call, test_id, state, *args, **kwargs):
@@ -201,20 +224,17 @@ async def choice_set_question(call: types.CallbackQuery, callback_data: dict, st
     if action == 'back':
         all_questions = await db.select_questions_test_id(data.get('test_id'))
         markup = await create_questions_markup(all_questions)
-        await call.message.edit_text(f"{data.get('science')} fani testining qaysi savolini tahrirlamoqchisiz?",
-                                     reply_markup=markup)
+        await call.message.delete()
+        await call.message.answer(f"{data.get('science')} fani testining qaysi savolini tahrirlamoqchisiz?",
+                                  reply_markup=markup)
         return
     elif action == 'edit':
         await call.message.delete()
         question = await db.select_question_id(ques_id)
         await state.update_data({'question_id': ques_id, 'number_question': question[1]})
-        if data.get('language') == 'uzbek':
-            word = 'o\'zbek'
-        else:
-            word = 'rus'
         await call.message.answer(
-            f"{data.get('science')} fani testi uchun {question[1]}-savolni {word} tilida kiriting"
-            f"(Oxirgi qismda to'g'ri variantni raqam orqali ifodalang):")
+            f"{data.get('science')} fani testi uchun {question[1]}-savolni rasmini yuboring!",
+            reply_markup=skip_markup)
         await AddQuestionTestStatesGroup.next()
 
 
@@ -232,6 +252,8 @@ async def choice_set_question(call: types.CallbackQuery, state: FSMContext):
     await AddQuestionTestStatesGroup.test.set()
 
 
+# (249, 1, 'ergbvrtb4b45hb45', 'Mavjud emas', 1, None, 249, 249, 14)
+# (ques_id, num, ques_uz, ques_ru, resp_true, image_id, ques_id, ques_id, test_id)
 @dp.callback_query_handler(state=AddQuestionTestStatesGroup.update)
 async def choice_set_question(call: types.CallbackQuery, state: FSMContext):
     question = await db.select_question_id(call.data)
@@ -246,7 +268,12 @@ async def choice_set_question(call: types.CallbackQuery, state: FSMContext):
                 f"Ru:\n"
                 f"{question[3]}\n"
                 f"To'g'ri javob: {question[4]}")
-    await call.message.edit_text(info, reply_markup=await create_edit_question_markup(question[0]))
+    if question[5]:
+        await call.message.delete()
+        await call.message.answer_photo(question[5], caption=info,
+                                        reply_markup=await create_edit_question_markup(question[0]))
+    else:
+        await call.message.edit_text(info, reply_markup=await create_edit_question_markup(question[0]))
 
 
 @dp.message_handler(state=AddQuestionTestStatesGroup.question)
@@ -254,9 +281,9 @@ async def send_question_uz(msg: types.Message, state: FSMContext):
     data = await state.get_data()
     true_response = str(msg.text)[-1]
     if data.get('language') == 'uzbek':
-        await state.update_data({'question_uz': str(msg.text)[:len(msg.text)-1], 'question_ru': 'Mavjud emas'})
+        await state.update_data({'question_uz': str(msg.text)[:len(msg.text) - 1], 'question_ru': 'Mavjud emas'})
     else:
-        await state.update_data({'question_uz': 'Mavjud emas', 'question_ru': str(msg.text)[:len(msg.text)-1]})
+        await state.update_data({'question_uz': 'Mavjud emas', 'question_ru': str(msg.text)[:len(msg.text) - 1]})
     if true_response.isdigit() and true_response in ['1', '2', '3', '4']:
         true_response = int(true_response)
     else:

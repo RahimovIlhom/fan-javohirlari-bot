@@ -5,6 +5,7 @@ class AddQuestionTestStatesGroup(StatesGroup):
     science = State()
     test = State()
     update = State()
+    image = State()
     question = State()
 
 

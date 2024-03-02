@@ -124,7 +124,14 @@ async def start_test(call: types.CallbackQuery, state: FSMContext):
     else:
         test_info = (f"Вопрос 1.\n\n"
                      f"{question[3]}")
-    await call.message.edit_text(test_info, reply_markup=await make_keyboard_test_responses(data.get('language')))
+    if question[5]:
+        await state.update_data({'image': True})
+        await call.message.delete()
+        await call.message.answer_photo(question[5], caption=test_info,
+                                        reply_markup=await make_keyboard_test_responses(data.get('language')))
+    else:
+        await state.update_data({'image': False})
+        await call.message.edit_text(test_info, reply_markup=await make_keyboard_test_responses(data.get('language')))
     await TestStatesGroup.next()
 
 
@@ -157,11 +164,19 @@ async def select_response(call: types.CallbackQuery, callback_data: dict, state:
     else:
         await state.update_data({'user_responses': f"{current_resp}"})
     # belgilangan javobni ko'rsatish
-    if data.get('language') == 'uzbek':
-        old_message_text = call.message.text + f"\n\nSizning javobingiz: {responses_uz[int(current_resp)-1]}"
+    if data.get('image'):
+        if data.get('language') == 'uzbek':
+            old_message = call.message.caption + f"\n\nSizning javobingiz: {responses_uz[int(current_resp) - 1]}"
+        else:
+            old_message = call.message.caption + f"\n\nВаш ответ: {responses_ru[int(current_resp) - 1]}"
+        await call.message.edit_caption(old_message, reply_markup=markup)
     else:
-        old_message_text = call.message.text + f"\n\nВаш ответ: {responses_ru[int(current_resp)-1]}"
-    await call.message.edit_text(old_message_text, reply_markup=markup)
+        if data.get('language') == 'uzbek':
+            old_message = call.message.text + f"\n\nSizning javobingiz: {responses_uz[int(current_resp) - 1]}"
+        else:
+            old_message = call.message.text + f"\n\nВаш ответ: {responses_ru[int(current_resp) - 1]}"
+        await call.message.edit_text(old_message, reply_markup=markup)
+
     # test savollari tugaganligini tekshirish
     if number >= count:
         user = await db.select_user(call.from_user.id)
@@ -193,8 +208,14 @@ async def select_response(call: types.CallbackQuery, callback_data: dict, state:
     else:
         test_info = (f"Вопрос {number + 1}.\n\n"
                      f"{question[3]}")
-    await call.message.answer(test_info,
-                              reply_markup=await make_keyboard_test_responses(data.get('language')))
+    if question[5]:
+        await state.update_data({'image': True})
+        await call.message.answer_photo(question[5], caption=test_info,
+                                        reply_markup=await make_keyboard_test_responses(data.get('language')))
+    else:
+        await state.update_data({'image': False})
+        await call.message.answer(test_info,
+                                  reply_markup=await make_keyboard_test_responses(data.get('language')))
 
 
 @dp.message_handler(state=TestStatesGroup.execution, content_types=ContentType.ANY)

@@ -6,3 +6,4 @@ from .all_tests_inlines import (create_all_tests_markup, test_callback_data, cre
 from .variants_inlines import variants
 from .question_inlines import create_edit_question_markup, question_callback_data
 from .result_test_inlines import day_tests_markup
+from .checksubs import make_check_channels_subs

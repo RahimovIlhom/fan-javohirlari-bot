@@ -17,6 +17,8 @@ class Database:
         return resp.fetchall()
 
     async def select_user(self, tg_id, *args, **kwargs):
+        # (1282, '5442563505', 'uzbek', 'wevge', '+998336589340', 'Andijon viloyati', "Bo'z tumani",
+        # '3', 'FIZIKA', '2024-02-19 20:37:57.876955', '2024-03-18 04:04:23.423830', '-', '-', '-', pinfl)
         conn = await self.connect
         cur = conn.cursor()
         resp = cur.execute(f"select * from users where tg_id={tg_id}")
@@ -28,20 +30,27 @@ class Database:
         resp = cur.execute(f"select * from users where phone_number={phone_number}")
         return resp.fetchone()
 
-    async def add_or_update_user(self, tg_id, language, fullname, phone, region, district, school, science, sc1='-', sc2='-', sc3='-', *args, **kwargs):
+    async def add_or_update_user(self, tg_id, language, fullname, phone, region, district, school, science, sc1='-', sc2='-', sc3='-', pinfl='-', *args, **kwargs):
         conn = await self.connect
         cur = conn.cursor()
         if await self.select_user(tg_id):
             SQL_query = ("update users set language=?, fullname=?, phone_number=?, region=?, district=?, "
-                         "school_number=?, science_1=?, science_2=?, science_3=?, olimpia_science=?, update_time=? "
-                         "where tg_id=?;")
-            cur.execute(SQL_query, (language, fullname, phone, region, district, school, sc1, sc2, sc3, science, datetime.datetime.now(), tg_id))
+                         "school_number=?, science_1=?, science_2=?, science_3=?, olimpia_science=?, update_time=?, "
+                         "pinfl=? where tg_id=?;")
+            cur.execute(SQL_query, (language, fullname, phone, region, district, school, sc1, sc2, sc3, science, datetime.datetime.now(), pinfl, tg_id))
         else:
             SQL_query = ("insert into users (tg_id, language, fullname, phone_number, region, district, school_number, "
-                         "science_1, science_2, science_3, olimpia_science, created_time, update_time) values (?, ?, ?,"
-                         "?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")
+                         "science_1, science_2, science_3, olimpia_science, created_time, update_time, pinfl) values "
+                         "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")
             cur.execute(SQL_query, (tg_id, language, fullname, phone, region, district, school, sc1, sc2, sc3, science,
-                                    datetime.datetime.now(), datetime.datetime.now()))
+                                    datetime.datetime.now(), datetime.datetime.now(), pinfl))
+        conn.commit()
+
+    async def update_pinfl(self, tg_id, pinfl):
+        conn = await self.connect
+        cur = conn.cursor()
+        SQL_query = "update users set pinfl=? where tg_id=?;"
+        cur.execute(SQL_query, (pinfl, tg_id))
         conn.commit()
 
     async def select_column_names(self, *args, **kwargs):
@@ -94,13 +103,13 @@ class Database:
             """, (test_id, number))
         return resp.fetchone()
 
-    async def add_test_result(self, test_id, tg_id, language, fullname, phone_number, region, district, school_number, science, responses, result_time, *args, **kwargs):
+    async def add_test_result(self, test_id, tg_id, language, fullname, phone_number, region, district, school_number, science, responses, result_time, pinfl=None, *args, **kwargs):
         conn = await self.connect
         cur = conn.cursor()
         sql_query = ("INSERT INTO test_result (tg_id, language, fullname, phone_number, region, district, "
-                     "school_number, science, responses, result_time, test_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
-                     "?);")
-        cur.execute(sql_query, (tg_id, language, fullname, phone_number, region, district, school_number, science, responses, result_time, test_id))
+                     "school_number, science, responses, result_time, test_id, pinfl) VALUES (?, ?, ?, ?, ?, ?, ?, ?, "
+                     "?, ?, ?, ?);")
+        cur.execute(sql_query, (tg_id, language, fullname, phone_number, region, district, school_number, science, responses, result_time, test_id, pinfl))
         conn.commit()
 
     async def select_science_tests(self, science):

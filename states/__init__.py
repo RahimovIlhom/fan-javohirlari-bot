@@ -1,4 +1,4 @@
-from .register_states import RegisterStatesGroup
+from .register_states import RegisterStatesGroup, PINFLStateGroup
 from .text_execution_states import TestStatesGroup
 from .tests_states import AddQuestionTestStatesGroup, CreateTestStatesGroup
 from .result_test_states import ResultTestStatesGroup

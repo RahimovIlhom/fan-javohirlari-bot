@@ -2,7 +2,7 @@ import json
 
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-from aiogram.types import ContentType, ReplyKeyboardRemove
+from aiogram.types import ContentType, ReplyKeyboardRemove, InputFile
 
 from data.config import regions_uz, regions_ru, sciences_uz, sciences_ru
 from keyboards.default import phone_ru_markup, phone_uz_markup, language_markup, region_uz_markup, region_ru_markup, \
@@ -69,16 +69,15 @@ async def send_phone(msg: types.Message, state: FSMContext):
             if await db.select_user_phone(msg.contact.phone_number):
                 await msg.reply(text="Ushbu raqam ro’yxatga olingan")
                 return
-        info = "O’zbekistonning qaysi hududidansiz?"
-        markup = region_uz_markup
+        info = "JSHSHIR(PINFL) raqamingizni kiriting:"
     else:
         if data.get('re_register') is None:
             if await db.select_user_phone(msg.contact.phone_number):
                 await msg.reply(text="Этот номер зарегистрирован")
                 return
-        info = "В каком регионе Узбекистана вы проживаете?"
-        markup = region_ru_markup
-    await msg.answer(info, reply_markup=markup)
+        info = "Введите ваш номер ИНН (PINFL):"
+    image = InputFile('data/images/jshshir.jpg')
+    await msg.answer_photo(image, caption=info, reply_markup=ReplyKeyboardRemove())
     await RegisterStatesGroup.next()
 
 
@@ -90,6 +89,46 @@ async def err_send_phone(msg: types.Message, state: FSMContext):
         err_markup = phone_uz_markup
     else:
         err_info = "‼️ Пожалуйста, нажмите на кнопку ниже и отправьте свой номер телефона!"
+        err_markup = phone_ru_markup
+    await msg.delete()
+    await msg.answer(err_info, reply_markup=err_markup)
+
+
+@dp.message_handler(state=RegisterStatesGroup.pinfl)
+async def send_pinfl(msg: types.Message, state: FSMContext):
+    await state.update_data({'pinfl': msg.text})
+    data = await state.get_data()
+    language = data.get('language')
+    if language == 'uzbek':
+        if len(msg.text) != 14:
+            await msg.answer("JSHSHIR(PINFL) to'g'ri kiritilmadi!\nIltimos qayta kiriting:")
+            return
+        if not msg.text.isnumeric():
+            await msg.answer("JSHSHIR(PINFL) faqat raqamlardan tashkil topadi!\nIltimos qayta kiriting:")
+            return
+        info = "O’zbekistonning qaysi hududidansiz?"
+        markup = region_uz_markup
+    else:
+        if len(msg.text) != 14:
+            await msg.answer("Номер ИНН (PINFL) введен неправильно!\nПожалуйста, введите еще раз:")
+            return
+        if not msg.text.isnumeric():
+            await msg.answer("Номер ИНН (PINFL) должен состоять только из цифр!\nПожалуйста, введите еще раз:")
+            return
+        info = "В каком регионе Узбекистана вы проживаете?"
+        markup = region_ru_markup
+    await msg.answer(info, reply_markup=markup)
+    await RegisterStatesGroup.next()
+
+
+@dp.message_handler(state=RegisterStatesGroup.pinfl, content_types=ContentType.ANY)
+async def err_send_pinfl(msg: types.Message, state: FSMContext):
+    data = await state.get_data()
+    if data.get('language') == 'uzbek':
+        err_info = "‼️ Iltimos, JSHSHIR(PINFL) raqamingiz yuboring!"
+        err_markup = phone_uz_markup
+    else:
+        err_info = "‼️ Пожалуйста, отправьте свой номер ИНН(PINFL)!"
         err_markup = phone_ru_markup
     await msg.delete()
     await msg.answer(err_info, reply_markup=err_markup)

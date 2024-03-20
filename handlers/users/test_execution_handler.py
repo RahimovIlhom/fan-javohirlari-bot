@@ -2,7 +2,7 @@ import datetime
 import time
 
 from aiogram import types
-from aiogram.types import ReplyKeyboardRemove, ContentType, InlineKeyboardMarkup
+from aiogram.types import ReplyKeyboardRemove, ContentType, InlineKeyboardMarkup, InputFile
 from aiogram.dispatcher import FSMContext
 
 from data.config import sciences_uz, sciences_ru, sciences_dict, responses_uz, responses_ru
@@ -10,16 +10,23 @@ from filters import IsPrivate
 from keyboards.default import sciences_uz_markup, sciences_ru_markup, menu_test_ru, menu_test_uz
 from keyboards.inline import start_test_markup_uz, start_test_markup_ru, make_keyboard_test_responses, callback_data
 from loader import dp, db
-from states import TestStatesGroup
+from states import TestStatesGroup, PINFLStateGroup
 
 
 @dp.message_handler(IsPrivate(), text="TEST TOPSHIRISH")
 async def solution_test_uz(msg: types.Message, state: FSMContext):
-    if await db.select_user(msg.from_user.id) is None:
+    user = await db.select_user(msg.from_user.id)
+    if user is None:
         await msg.answer("‼️ Siz ro'yxatdan o'tmaganingiz uchun test topshira olmaysiz!\n"
                          "Ro'yxatdan o'tish uchun - /start", reply_markup=ReplyKeyboardRemove())
         return
     await state.set_data({'language': 'uzbek'})
+    if user[-1] is None:
+        result = "⚠️ Botdan foydalanish JSHSHIR (PINFL) raqamingizni kiriting:"
+        image = InputFile('data/images/jshshir.jpg')
+        await msg.answer_photo(image, caption=result, reply_markup=ReplyKeyboardRemove())
+        await PINFLStateGroup.pinfl.set()
+        return
     info = f"Qaysi fandan test topshirmoqchisiz?"
     await msg.answer(info, reply_markup=sciences_uz_markup)
     await state.set_state(TestStatesGroup.science)
@@ -27,11 +34,18 @@ async def solution_test_uz(msg: types.Message, state: FSMContext):
 
 @dp.message_handler(IsPrivate(), text="ПРОЙТИ ТЕСТ")
 async def solution_test_ru(msg: types.Message, state: FSMContext):
-    if await db.select_user(msg.from_user.id) is None:
+    user = await db.select_user(msg.from_user.id)
+    if user is None:
         await msg.answer("‼️ Вы не можете пройти тест, не зарегистрировавшись!\n"
                          "Для регистрации - /start", reply_markup=ReplyKeyboardRemove())
         return
     await state.set_data({'language': 'russian'})
+    if user[-1] is None:
+        result = "⚠️ Введите свой номер ИНН (PINFL) для использования ботом:"
+        image = InputFile('data/images/jshshir.jpg')
+        await msg.answer_photo(image, caption=result, reply_markup=ReplyKeyboardRemove())
+        await PINFLStateGroup.pinfl.set()
+        return
     info = f"Из какого предмета вы хотите сдать тест?"
     await msg.answer(info, reply_markup=sciences_ru_markup)
     await state.set_state(TestStatesGroup.science)
@@ -131,7 +145,8 @@ async def start_test(call: types.CallbackQuery, state: FSMContext):
                                         reply_markup=await make_keyboard_test_responses(data.get('language')))
     else:
         await state.update_data({'image': False})
-        await call.message.edit_text(test_info, reply_markup=await make_keyboard_test_responses(data.get('language')))
+        await call.message.delete()
+        await call.message.answer(test_info, reply_markup=await make_keyboard_test_responses(data.get('language')))
     await TestStatesGroup.next()
 
 
@@ -183,7 +198,7 @@ async def select_response(call: types.CallbackQuery, callback_data: dict, state:
         db_responses = ''.join(
             map(lambda x, y: '1' if x == y else '0', responses, user_resp + current_resp))
         await db.add_test_result(test_id, call.from_user.id, data.get('language'), *user[3:8], data.get('science'),
-                                 db_responses, datetime.datetime.now())
+                                 db_responses, datetime.datetime.now(), user[-1])
         if data.get('language') == 'uzbek':
             await call.message.answer("✅ Test yakunlandi!\n"
                                       f"Hurmatli {user[3]}, siz test savollarining "

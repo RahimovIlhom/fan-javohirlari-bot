@@ -1,4 +1,4 @@
 aiogram~=2.25.1
 environs==9.5.0
-Django~=5.0.3
+Django
 XlsxWriter~=3.1.9

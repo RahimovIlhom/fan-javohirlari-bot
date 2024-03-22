@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CustomUser, Token
+from .models import OlimpistUser, Token
 
 
 class CustomUserAdmin(admin.ModelAdmin):
@@ -8,5 +8,5 @@ class CustomUserAdmin(admin.ModelAdmin):
     list_filter = ['olimpia_science', 'region', 'language']
 
 
-admin.site.register(CustomUser, CustomUserAdmin)
+admin.site.register(OlimpistUser, CustomUserAdmin)
 admin.site.register(Token)

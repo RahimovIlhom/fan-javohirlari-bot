@@ -1,3 +1,5 @@
+import os
+
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.builtin import CommandStart
@@ -10,6 +12,7 @@ from keyboards.inline.checksubs import make_check_channels_subs
 from loader import dp, db, bot
 from states import RegisterStatesGroup, PINFLStateGroup
 from utils.misc import subscription
+from utils.misc.create_certificate import create_certificate, photo_link
 
 
 @dp.message_handler(CommandStart(), IsPrivate(), state='*')
@@ -119,3 +122,13 @@ async def checker(call: types.CallbackQuery):
         result += "⚠️ Подпишитесь на следующие каналы для использования бота:\n"
     await call.message.answer(result, reply_markup=await make_check_channels_subs(channels, lang=user[2]),
                               disable_web_page_preview=True)
+
+
+# @dp.message_handler(commands=['cer'])
+# async def send_cer(msg: types.Message):
+#     image_path = await create_certificate(1234657, 2, 'Rahimov Ilhomjon Iqboljon o\'g\'li')
+#     image_url = await photo_link(image_path)
+#     print(image_url)
+#     await msg.answer_photo(image_url, caption="Sertifikatingiz")
+#     if os.path.exists(image_path):
+#         os.remove(image_path)

@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class CustomUser(models.Model):
+class OlimpistUser(models.Model):
     tg_id = models.CharField(max_length=20, unique=True)
     language = models.CharField(max_length=10)
     fullname = models.CharField(max_length=100)

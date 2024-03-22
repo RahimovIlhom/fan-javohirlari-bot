@@ -22,3 +22,18 @@ class CustomUser(models.Model):
 
     class Meta:
         db_table = 'users'
+
+
+class Token(models.Model):
+    token = models.CharField(max_length=255)
+    created_time = models.DateTimeField(auto_now=True)
+    active = models.BooleanField(default=True)
+
+    objects = models.Manager()
+
+    def __str__(self):
+        return self.token
+
+    class Meta:
+        db_table = 'tokens'
+        ordering = ['-created_time']

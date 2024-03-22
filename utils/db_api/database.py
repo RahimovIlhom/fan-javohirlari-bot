@@ -1,6 +1,8 @@
 import datetime
 import sqlite3
 
+from utils.db_api import post_or_put_data
+
 
 class Database:
     def __init__(self, db_path: str):
@@ -30,14 +32,18 @@ class Database:
         resp = cur.execute(f"select * from users where phone_number={phone_number}")
         return resp.fetchone()
 
-    async def add_or_update_user(self, tg_id, language, fullname, phone, region, district, school, science, sc1='-', sc2='-', sc3='-', pinfl='-', *args, **kwargs):
+    async def add_or_update_user(self, tg_id, language, fullname, phone, region, district, school, science, sc1='-',
+                                 sc2='-', sc3='-', pinfl='-', *args, **kwargs):
         conn = await self.connect
         cur = conn.cursor()
         if await self.select_user(tg_id):
             SQL_query = ("update users set language=?, fullname=?, phone_number=?, region=?, district=?, "
                          "school_number=?, science_1=?, science_2=?, science_3=?, olimpia_science=?, update_time=?, "
                          "pinfl=? where tg_id=?;")
-            cur.execute(SQL_query, (language, fullname, phone, region, district, school, sc1, sc2, sc3, science, datetime.datetime.now(), pinfl, tg_id))
+            cur.execute(SQL_query, (
+                language, fullname, phone, region, district, school, sc1, sc2, sc3, science, datetime.datetime.now(),
+                pinfl,
+                tg_id))
         else:
             SQL_query = ("insert into users (tg_id, language, fullname, phone_number, region, district, school_number, "
                          "science_1, science_2, science_3, olimpia_science, created_time, update_time, pinfl) values "
@@ -45,6 +51,8 @@ class Database:
             cur.execute(SQL_query, (tg_id, language, fullname, phone, region, district, school, sc1, sc2, sc3, science,
                                     datetime.datetime.now(), datetime.datetime.now(), pinfl))
         conn.commit()
+        user_data = await self.select_user(tg_id)
+        await post_or_put_data(*user_data)
 
     async def update_pinfl(self, tg_id, pinfl):
         conn = await self.connect
@@ -52,6 +60,8 @@ class Database:
         SQL_query = "update users set pinfl=? where tg_id=?;"
         cur.execute(SQL_query, (pinfl, tg_id))
         conn.commit()
+        user_data = await self.select_user(tg_id)
+        await post_or_put_data(*user_data)
 
     async def select_column_names(self, *args, **kwargs):
         conn = await self.connect
@@ -103,19 +113,22 @@ class Database:
             """, (test_id, number))
         return resp.fetchone()
 
-    async def add_test_result(self, test_id, tg_id, language, fullname, phone_number, region, district, school_number, science, responses, result_time, pinfl=None, *args, **kwargs):
+    async def add_test_result(self, test_id, tg_id, language, fullname, phone_number, region, district, school_number,
+                              science, responses, result_time, pinfl=None, *args, **kwargs):
         conn = await self.connect
         cur = conn.cursor()
         sql_query = ("INSERT INTO test_result (tg_id, language, fullname, phone_number, region, district, "
                      "school_number, science, responses, result_time, test_id, pinfl) VALUES (?, ?, ?, ?, ?, ?, ?, ?, "
                      "?, ?, ?, ?);")
-        cur.execute(sql_query, (tg_id, language, fullname, phone_number, region, district, school_number, science, responses, result_time, test_id, pinfl))
+        cur.execute(sql_query, (
+            tg_id, language, fullname, phone_number, region, district, school_number, science, responses, result_time,
+            test_id, pinfl))
         conn.commit()
 
     async def select_science_tests(self, science):
         conn = await self.connect
         cur = conn.cursor()
-        resp = cur.execute("select * from tests where science = ?", (science, )).fetchall()
+        resp = cur.execute("select * from tests where science = ?", (science,)).fetchall()
         if resp:
             return resp[::-1]
         return False
@@ -151,7 +164,7 @@ class Database:
     async def select_test_id(self, test_id):
         conn = await self.connect
         cur = conn.cursor()
-        resp = cur.execute(f"SELECT * FROM tests WHERE id = ?", (test_id, ))
+        resp = cur.execute(f"SELECT * FROM tests WHERE id = ?", (test_id,))
         return resp.fetchone()
 
     async def delete_test(self, test_id):
@@ -211,3 +224,19 @@ class Database:
         cur = conn.cursor()
         resp = cur.execute(f"SELECT * FROM test_result WHERE test_id = ?", (test_id,))
         return resp.fetchall()
+
+    async def add_token(self, token):
+        conn = await self.connect
+        cur = conn.cursor()
+        cur.execute("insert into tokens (token, created_time, active) values (?, ?, ?);",
+                    (token, datetime.datetime.now(), True))
+        conn.commit()
+        cur.execute("update tokens set active=? where token!=?", (False, token))
+        conn.commit()
+
+    async def get_token(self):
+        conn = await self.connect
+        cur = conn.cursor()
+        resp = cur.execute("select * from tokens where active=?;", (True, ))
+        return resp.fetchone()
+

@@ -2,4 +2,3 @@ aiogram~=2.25.1
 environs==9.5.0
 Django~=5.0.1
 XlsxWriter~=3.1.9
-requests==2.31.0

@@ -13,6 +13,9 @@ class Test(models.Model):
     language = models.CharField(max_length=7, choices=languages, default=languages[0])
     questions_count = models.IntegerField(default=10)
     is_confirm = models.BooleanField(default=False)
+    olympiad_test = models.BooleanField(default=False)
+    start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         db_table = 'tests'

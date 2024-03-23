@@ -22,9 +22,13 @@ async def solution_test_uz(msg: types.Message, state: FSMContext):
         return
     await state.set_data({'language': 'uzbek'})
     if user[-1] is None:
-        result = "⚠️ Botdan foydalanish JSHSHIR (PINFL) raqamingizni kiriting:"
-        image = InputFile('data/images/jshshir.jpg')
-        await msg.answer_photo(image, caption=result, reply_markup=ReplyKeyboardRemove())
+        result = "⚠️ Botdan foydalanish uchun ID-kartangizdagi Shaxsiy raqamingizni kiriting:"
+        image = InputFile('data/images/pinfl.jpg')
+        image_url = "http://telegra.ph//file/97b3043fbcdc89ba48360.jpg"
+        try:
+            await msg.answer_photo(image_url, caption=result, reply_markup=ReplyKeyboardRemove())
+        except:
+            await msg.answer_photo(image, caption=result, reply_markup=ReplyKeyboardRemove())
         await PINFLStateGroup.pinfl.set()
         return
     info = f"Qaysi fandan test topshirmoqchisiz?"
@@ -41,9 +45,14 @@ async def solution_test_ru(msg: types.Message, state: FSMContext):
         return
     await state.set_data({'language': 'russian'})
     if user[-1] is None:
-        result = "⚠️ Введите свой номер ИНН (PINFL) для использования ботом:"
-        image = InputFile('data/images/jshshir.jpg')
-        await msg.answer_photo(image, caption=result, reply_markup=ReplyKeyboardRemove())
+        result = ("⚠️ Введите персональный идентификационный номер, указанный в вашем ID-карте, чтобы воспользоваться "
+                  "ботом:")
+        image = InputFile('data/images/pinfl_ru.jpg')
+        image_url = "http://telegra.ph//file/e815e58a3c4c08948b617.jpg"
+        try:
+            await msg.answer_photo(image_url, caption=result, reply_markup=ReplyKeyboardRemove())
+        except:
+            await msg.answer_photo(image, caption=result, reply_markup=ReplyKeyboardRemove())
         await PINFLStateGroup.pinfl.set()
         return
     info = f"Из какого предмета вы хотите сдать тест?"

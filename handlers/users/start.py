@@ -25,11 +25,19 @@ async def bot_start(message: types.Message, state: FSMContext):
     if user:
         if user[-1] is None:
             if user[2] == 'uzbek':
-                result = "⚠️ Botdan foydalanish JSHSHIR (PINFL) raqamingizni kiriting:"
+                result = "⚠️ Botdan foydalanish uchun ID-kartangizdagi Shaxsiy raqamingizni kiriting:"
+                image = InputFile('data/images/pinfl.jpg')
+                image_url = "http://telegra.ph//file/97b3043fbcdc89ba48360.jpg"
             else:
-                result = "⚠️ Введите свой номер ИНН (PINFL) для использования ботом:"
-            image = InputFile('data/images/jshshir.jpg')
-            await message.answer_photo(image, caption=result, reply_markup=ReplyKeyboardRemove())
+                result = ("⚠️ Введите персональный идентификационный номер, указанный в вашем ID-карте, "
+                          "чтобы воспользоваться ботом:")
+                image = InputFile('data/images/pinfl_ru.jpg')
+                image_url = "http://telegra.ph//file/e815e58a3c4c08948b617.jpg"
+            try:
+                await message.answer_photo(image_url, caption=result, reply_markup=ReplyKeyboardRemove())
+            except:
+                await message.answer_photo(image, caption=result, reply_markup=ReplyKeyboardRemove())
+
             await state.set_data({'language': user[2]})
             await PINFLStateGroup.pinfl.set()
             return
@@ -69,19 +77,20 @@ async def add_pinfl_user(msg: types.Message, state: FSMContext):
     language = data.get('language')
     if language == 'uzbek':
         if len(msg.text) != 14:
-            await msg.answer("JSHSHIR (PINFL) to'g'ri kiritilmadi!\nIltimos qayta kiriting:")
+            await msg.answer("Shaxsiy raqam to'g'ri kiritilmadi!\nIltimos qayta kiriting:")
             return
         if not msg.text.isnumeric():
-            await msg.answer("JSHSHIR (PINFL) faqat raqamlardan tashkil topadi!\nIltimos qayta kiriting:")
+            await msg.answer("Shaxsiy raqam faqat raqamlardan tashkil topadi!\nIltimos qayta kiriting:")
             return
         info = "Ma'lumot saqlandi.\nTest topshirish uchun quyidagi tugmadan foydalaning 👇"
         markup = menu_test_uz
     else:
         if len(msg.text) != 14:
-            await msg.answer("Номер ИНН (PINFL) введен неправильно!\nПожалуйста, введите еще раз:")
+            await msg.answer("Персональный идентификационный номер введен неверно!\nПожалуйста, введите еще раз:")
             return
         if not msg.text.isnumeric():
-            await msg.answer("Номер ИНН (PINFL) должен состоять только из цифр!\nПожалуйста, введите еще раз:")
+            await msg.answer("Персональный идентификационный номер должен состоять только из цифр!\nПожалуйста, "
+                             "введите еще раз:")
             return
         info = "Информация сохранена.\nИспользуйте кнопку ниже, чтобы пройти тест 👇"
         markup = menu_test_ru

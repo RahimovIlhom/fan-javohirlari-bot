@@ -6,7 +6,7 @@ async def create_certificate(user_id, image_index, fullname):
     image_index: value distance [0:3]
     """
     images = ['0001', '0002', '0003', '0004']
-    img = Image.open(f'data/images/{images[image_index]}.jpg')
+    img = Image.open(f'data/certificates/{images[image_index]}.jpg')
 
     draw = ImageDraw.Draw(img)
 

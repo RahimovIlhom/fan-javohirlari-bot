@@ -81,6 +81,7 @@ class Database:
     async def select_test(self, science, language=None):
         conn = await self.connect
         cur = conn.cursor()
+        # (8, 'ONA TILI', '2024-02-26', 'uzbek', 30, 1)
         if language is None:
             sql_query = f"SELECT * FROM tests WHERE science = ? and is_confirm = ?"
             resp = cur.execute(sql_query, (science, True)).fetchall()

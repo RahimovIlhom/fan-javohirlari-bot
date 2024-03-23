@@ -74,6 +74,7 @@ async def choice_test_science(msg: types.Message, state: FSMContext):
             await msg.answer("‼️ Iltimos, quyidagi tugmalardan foydalaning!", reply_markup=sciences_uz_markup)
             return
         test_app = await db.select_test(msg.text, data.get('language'))
+        print(test_app)
         if test_app is False:
             await msg.answer("Hali test mavjud emas!")
             return

@@ -10,6 +10,7 @@ from keyboards.default import phone_ru_markup, phone_uz_markup, language_markup,
     make_lessons_uz_markup, make_lessons_ru_markup, menu_test_uz, menu_test_ru
 from loader import dp, db
 from states import RegisterStatesGroup
+from utils.misc.create_certificate import photo_link
 
 
 @dp.message_handler(text='O’zbek tili', state=RegisterStatesGroup.language)
@@ -69,15 +70,21 @@ async def send_phone(msg: types.Message, state: FSMContext):
             if await db.select_user_phone(msg.contact.phone_number):
                 await msg.reply(text="Ushbu raqam ro’yxatga olingan")
                 return
-        info = "JSHSHIR(PINFL) raqamingizni kiriting:"
+        info = "ID-kartangizdagi Shaxsiy raqamingizni kiriting:"
+        image = InputFile('data/images/pinfl.jpg')
+        image_url = "http://telegra.ph//file/97b3043fbcdc89ba48360.jpg"
     else:
         if data.get('re_register') is None:
             if await db.select_user_phone(msg.contact.phone_number):
                 await msg.reply(text="Этот номер зарегистрирован")
                 return
-        info = "Введите ваш номер ИНН (PINFL):"
-    image = InputFile('data/images/jshshir.jpg')
-    await msg.answer_photo(image, caption=info, reply_markup=ReplyKeyboardRemove())
+        info = "Введите персональный идентификационный номер, указанный на ID-карте:"
+        image = InputFile('data/images/pinfl_ru.jpg')
+        image_url = "http://telegra.ph//file/e815e58a3c4c08948b617.jpg"
+    try:
+        await msg.answer_photo(image_url, caption=info, reply_markup=ReplyKeyboardRemove())
+    except:
+        await msg.answer_photo(image, caption=info, reply_markup=ReplyKeyboardRemove())
     await RegisterStatesGroup.next()
 
 
@@ -101,19 +108,20 @@ async def send_pinfl(msg: types.Message, state: FSMContext):
     language = data.get('language')
     if language == 'uzbek':
         if len(msg.text) != 14:
-            await msg.answer("JSHSHIR(PINFL) to'g'ri kiritilmadi!\nIltimos qayta kiriting:")
+            await msg.answer("Shaxsiy raqam to'g'ri kiritilmadi!\nIltimos qayta kiriting:")
             return
         if not msg.text.isnumeric():
-            await msg.answer("JSHSHIR(PINFL) faqat raqamlardan tashkil topadi!\nIltimos qayta kiriting:")
+            await msg.answer("Shaxsiy raqam faqat raqamlardan tashkil topadi!\nIltimos qayta kiriting:")
             return
         info = "O’zbekistonning qaysi hududidansiz?"
         markup = region_uz_markup
     else:
         if len(msg.text) != 14:
-            await msg.answer("Номер ИНН (PINFL) введен неправильно!\nПожалуйста, введите еще раз:")
+            await msg.answer("Персональный идентификационный номер введен неверно!\nПожалуйста, введите еще раз:")
             return
         if not msg.text.isnumeric():
-            await msg.answer("Номер ИНН (PINFL) должен состоять только из цифр!\nПожалуйста, введите еще раз:")
+            await msg.answer("Персональный идентификационный номер должен состоять только из цифр!\nПожалуйста, "
+                             "введите еще раз:")
             return
         info = "В каком регионе Узбекистана вы проживаете?"
         markup = region_ru_markup
@@ -124,11 +132,12 @@ async def send_pinfl(msg: types.Message, state: FSMContext):
 @dp.message_handler(state=RegisterStatesGroup.pinfl, content_types=ContentType.ANY)
 async def err_send_pinfl(msg: types.Message, state: FSMContext):
     data = await state.get_data()
+    await msg.delete()
     if data.get('language') == 'uzbek':
-        err_info = "‼️ Iltimos, JSHSHIR(PINFL) raqamingiz yuboring!"
+        err_info = "‼️ Iltimos, ID-kartangizdagi Shaxsiy raqamingizni kiriting:"
         err_markup = phone_uz_markup
     else:
-        err_info = "‼️ Пожалуйста, отправьте свой номер ИНН(PINFL)!"
+        err_info = "‼️ Пожалуйста, Введите персональный идентификационный номер, указанный на ID-карте:"
         err_markup = phone_ru_markup
     await msg.delete()
     await msg.answer(err_info, reply_markup=err_markup)

@@ -10,6 +10,6 @@ async def make_check_channels_subs(channels: list, lang: str):
     if lang == 'uzbek':
         check_btn = InlineKeyboardButton(text="✅ Obuna bo'ldim", callback_data="check_subs")
     else:
-        check_btn = InlineKeyboardButton(text="✅ Подписался", callback_data="check_subs")
+        check_btn = InlineKeyboardButton(text="✅ Подписался(-ась)", callback_data="check_subs")
     markup.insert(check_btn)
     return markup

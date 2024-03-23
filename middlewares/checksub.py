@@ -16,6 +16,10 @@ class BigBrother(BaseMiddleware):
         if update.message:
             if update.message.text in ['ПРОЙТИ ТЕСТ', 'TEST TOPSHIRISH']:
                 user = update.message.from_user.id
+            elif update.message.text in ['/start', '/help', '/re_register']:
+                user = update.message.from_user.id
+                if await db.select_user(user) is None:
+                    return
             else:
                 return
         elif update.callback_query:

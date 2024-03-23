@@ -1,15 +1,18 @@
 import json
+import time
 
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.types import ContentType, ReplyKeyboardRemove, InputFile
 
-from data.config import regions_uz, regions_ru, sciences_uz, sciences_ru
+from data.config import regions_uz, regions_ru, sciences_uz, sciences_ru, CHANNELS
 from keyboards.default import phone_ru_markup, phone_uz_markup, language_markup, region_uz_markup, region_ru_markup, \
     district_uz_markup, district_ru_markup, back_uz_button, back_ru_button, sciences_uz_markup, sciences_ru_markup, \
     make_lessons_uz_markup, make_lessons_ru_markup, menu_test_uz, menu_test_ru
-from loader import dp, db
+from keyboards.inline import make_check_channels_subs
+from loader import dp, db, bot
 from states import RegisterStatesGroup
+from utils.misc import subscription
 from utils.misc.create_certificate import photo_link
 
 
@@ -278,7 +281,8 @@ async def choice_online_lesson(msg: types.Message, state: FSMContext):
             await RegisterStatesGroup.next()
             return
         if msg.text not in sciences_uz:
-            await msg.answer("‼️ Iltimos, quyidagi tugmalardan foydalaning!", reply_markup=await make_lessons_uz_markup(sc1, sc2, sc3))
+            await msg.answer("‼️ Iltimos, quyidagi tugmalardan foydalaning!",
+                             reply_markup=await make_lessons_uz_markup(sc1, sc2, sc3))
             return
         if sc1 is None:
             await state.update_data({'sc1': msg.text})
@@ -311,7 +315,8 @@ async def choice_online_lesson(msg: types.Message, state: FSMContext):
             await RegisterStatesGroup.next()
             return
         if msg.text not in sciences_ru:
-            await msg.answer("‼️ Пожалуйста, используйте кнопки ниже!", reply_markup=await make_lessons_ru_markup(sc1, sc2, sc3))
+            await msg.answer("‼️ Пожалуйста, используйте кнопки ниже!",
+                             reply_markup=await make_lessons_ru_markup(sc1, sc2, sc3))
             return
         if sc1 is None:
             await state.update_data({'sc1': msg.text})
@@ -366,10 +371,13 @@ async def send_science(msg: types.Message, state: FSMContext):
         if msg.text not in sciences_uz:
             await msg.answer("‼️ Iltimos, quyidagi tugmalardan foydalaning!", reply_markup=sciences_uz_markup)
             return
-        info = ("Tabriklaymiz! Siz ro’yxatdan muvaffaqiyatli o’tdingiz.\n\n"
-                "Loyiha yangiliklari haqida boxabar bo'lib "
-                "turish uchun kanalimizga a'zo bo'ling 👉 https://t.me/FanJavohirlari\n\n"
-                "Test topshirib ko’rish uchun quyidagi tugmani bosing.")
+        info = ("Arizangiz qabul qilinishi uchun, iltimos, \"Fan javohirlari\" telegram kanaliga a'zo bo'ling. U yerda "
+                "loyiha haqida ma'lumotlar, fanlar bo'yicha testlar va ularning javoblari, olimpiada o'tkazilish "
+                "kunlari e'lon qilinib boriladi. Shu bilan birga, kanalda abituriyentlar uchun qiziq bo'lgan "
+                "ma'lumotlar, talabalar hayoti, hajviy postlar berib boriladi.")
+        success = ("Tabriklaymiz, siz ro'yxatdan o'tdingiz. O'zingizni sinab ko'rish uchun test topshirmoqchi "
+                   "bo'lsangiz, quyidagi \"Test topshirish\" tugmasini bosing.")
+        data_refresh = "♻️ Ma'lumotlarga qayta ishlanmoqda!"
         markup = menu_test_uz
     else:
         if msg.text == '⬅️ Назад':
@@ -382,15 +390,36 @@ async def send_science(msg: types.Message, state: FSMContext):
         if msg.text not in sciences_ru:
             await msg.answer("‼️ Пожалуйста, используйте кнопки ниже!", reply_markup=sciences_ru_markup)
             return
-        info = ("Поздравляем! Вы успешно зарегистрировались.\n\n"
-                "Подпишитесь на наш канал, чтобы быть в курсе новостей "
-                "проекта 👉 https://t.me/FanJavohirlari\n\n"
-                "Чтобы попробовать пройти тест, нажмите кнопку ниже.")
+        info = ("Для того, чтобы вашу заявку приняли, пожалуйста, подпишитесь на Telegram-канал «Fan javohirlari». Там "
+                "публикуется информация о проекте, тесты по разным предметам и   ответы на них, а также даты "
+                "проведения олимпиады. Также на канале публикуется   интересная информация для абитуриентов, "
+                "посты про студенческую жизнь, юмористические посты.")
+        success = ("Поздравляем, теперь вы зарегистрированы! Если вы хотите пройти тест, чтобы проверить себя, "
+                   "нажмите кнопку «Пройти тест».")
+        data_refresh = "♻️ Данные обрабатываются!"
         markup = menu_test_ru
-    await msg.answer(info, reply_markup=markup)
-    await db.add_or_update_user(tg_id=msg.from_user.id, **data)
+    final_status = True
+    channels = []
+    for channel in CHANNELS:
+        status = await subscription.check(user_id=msg.from_user.id,
+                                          channel=channel)
+        final_status *= status
+        channel = await bot.get_chat(channel)
+        if not status:
+            channels.append(channel)
     await state.reset_state()
-    await state.finish()
+    if final_status:
+        await msg.answer(success, reply_markup=markup)
+        await state.finish()
+    else:
+        refresh_msg = await msg.answer(data_refresh, reply_markup=ReplyKeyboardRemove())
+        time.sleep(2)
+        await refresh_msg.delete()
+        await state.set_state('register_complete')
+        await state.set_data({'level': 'registration'})
+        await msg.answer(info, reply_markup=await make_check_channels_subs(channels, lang=data.get('language')),
+                         disable_web_page_preview=True)
+    await db.add_or_update_user(tg_id=msg.from_user.id, **data)
 
 
 @dp.message_handler(state=RegisterStatesGroup.science, content_types=ContentType.ANY)

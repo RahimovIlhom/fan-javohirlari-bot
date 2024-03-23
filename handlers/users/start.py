@@ -100,8 +100,9 @@ async def add_pinfl_user(msg: types.Message, state: FSMContext):
 
 
 @dp.callback_query_handler(text="check_subs", state='*')
-async def checker(call: types.CallbackQuery):
+async def checker(call: types.CallbackQuery, state: FSMContext):
     await call.answer()
+    data = await state.get_data()
     user = await db.select_user(call.from_user.id)
     result = str()
     channels = []
@@ -118,20 +119,39 @@ async def checker(call: types.CallbackQuery):
             else:
                 result += f"ℹ️ Вы не подписаны на канал <b>{channel.title}</b>!\n\n"
     await call.message.delete()
+    info_uz = (
+        "Arizangiz qabul qilinishi uchun, iltimos, \"Fan javohirlari\" telegram kanaliga a'zo bo'ling. U yerda "
+        "loyiha haqida ma'lumotlar, fanlar bo'yicha testlar va ularning javoblari, olimpiada o'tkazilish "
+        "kunlari e'lon qilinib boriladi. Shu bilan birga, kanalda abituriyentlar uchun qiziq bo'lgan "
+        "ma'lumotlar, talabalar hayoti, hajviy postlar berib boriladi.")
+    success_uz = ("✅ Tabriklaymiz, siz ro'yxatdan o'tdingiz. O'zingizni sinab ko'rish uchun test topshirmoqchi "
+                  "bo'lsangiz, quyidagi \"Test topshirish\" tugmasini bosing.")
+    info_ru = (
+        "Для того, чтобы вашу заявку приняли, пожалуйста, подпишитесь на Telegram-канал «Fan javohirlari». Там "
+        "публикуется информация о проекте, тесты по разным предметам и   ответы на них, а также даты "
+        "проведения олимпиады. Также на канале публикуется   интересная информация для абитуриентов, "
+        "посты про студенческую жизнь, юмористические посты.")
+    success_ru = ("✅ Поздравляем, теперь вы зарегистрированы! Если вы хотите пройти тест, чтобы проверить себя, "
+                  "нажмите кнопку «Пройти тест».")
     if final_status:
         if user[2] == 'uzbek':
-            result = "✅ Barcha kanallarga a'zo bo'ldingiz!"
+            result = success_uz if data.get('level') == 'registration' else "✅ Barcha kanallarga a'zo bo'ldingiz!"
+            markup = menu_test_uz
         else:
-            result = "✅ Вы подписались на все каналы!"
-        await call.message.answer(result, disable_web_page_preview=True)
+            result = success_ru if data.get('level') == 'registration' else "✅ Вы подписались на все каналы!"
+            markup = menu_test_ru
+        await call.message.answer(result, reply_markup=markup, disable_web_page_preview=True)
+        await state.reset_state()
+        await state.finish()
         return
     if user[2] == 'uzbek':
-        result += "⚠️ Botdan foydalanish uchun quyidagi kanallarga obuna bo'ling:\n"
+        result += info_uz if data.get('level') == 'registration' else ("⚠️ Botdan foydalanish uchun quyidagi "
+                                                                       "kanallarga obuna bo'ling:\n")
     else:
-        result += "⚠️ Подпишитесь на следующие каналы для использования бота:\n"
+        result += info_ru if data.get('level') == 'registration' else ("⚠️ Подпишитесь на следующие каналы для "
+                                                                       "использования бота:\n")
     await call.message.answer(result, reply_markup=await make_check_channels_subs(channels, lang=user[2]),
                               disable_web_page_preview=True)
-
 
 # @dp.message_handler(commands=['cer'])
 # async def send_cer(msg: types.Message):

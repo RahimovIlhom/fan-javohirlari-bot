@@ -49,12 +49,12 @@ async def send_msg_to_all_users(msg: types.Message, state: FSMContext):
     await state.finish()
 
 
-@dp.message_handler(IsPrivate(), text="📥 Test qo'shish uchun", user_id=ADMINS)
+@dp.message_handler(IsPrivate(), text="📚 Test bo'limi", user_id=ADMINS)
 async def add_test_or_question(msg: types.Message):
     await msg.answer("Bo'limni tanlang:", reply_markup=tests_markup)
 
 
-@dp.message_handler(IsPrivate(), text="Yangi test ochish", user_id=ADMINS)
+@dp.message_handler(IsPrivate(), text="➕ Yangi test ochish", user_id=ADMINS)
 async def show_all_tests(msg: types.Message, state: FSMContext):
     await msg.answer("Fanni tanlang", reply_markup=sciences_uz_markup)
     await state.set_state(CreateTestStatesGroup.science)
@@ -106,7 +106,7 @@ async def time_continue_test(msg: types.message, state: FSMContext):
                          "Qayta kiriting")
 
 
-@dp.message_handler(IsPrivate(), text="Fanlar bo'yicha testlar", user_id=ADMINS)
+@dp.message_handler(IsPrivate(), text="📓 Fanlar bo'yicha testlar", user_id=ADMINS)
 async def show_all_tests(msg: types.Message, state: FSMContext):
     await msg.answer("Fanni tanlang", reply_markup=sciences_uz_markup)
     await state.set_state(AddQuestionTestStatesGroup.science)

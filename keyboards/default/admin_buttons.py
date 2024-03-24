@@ -8,9 +8,13 @@ menu_markup = ReplyKeyboardMarkup(
             KeyboardButton(text="✉️ Xabar yuborish")
         ],
         [
-            KeyboardButton(text="📥 Test qo'shish uchun"),
+            KeyboardButton(text="📚 Test bo'limi"),
             KeyboardButton(text="📊 Test natijalari")
-        ]
+        ],
+        [
+            KeyboardButton(text="🗂 Olimpiada bo'limi"),
+            KeyboardButton(text="📈 Olimpiada natijalari")
+        ],
     ],
     resize_keyboard=True
 )
@@ -19,8 +23,8 @@ menu_markup = ReplyKeyboardMarkup(
 tests_markup = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton(text="Fanlar bo'yicha testlar"),
-            KeyboardButton(text="Yangi test ochish")
+            KeyboardButton(text="📓 Fanlar bo'yicha testlar"),
+            KeyboardButton(text="➕ Yangi test ochish")
         ],
         [
             KeyboardButton(text="⬅️ Orqaga")

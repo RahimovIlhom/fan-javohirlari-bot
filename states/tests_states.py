@@ -13,3 +13,5 @@ class CreateTestStatesGroup(StatesGroup):
     science = State()
     language = State()
     count = State()
+    start_time = State()
+    end_time = State()

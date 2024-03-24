@@ -3,7 +3,7 @@ from .models import Test, TestQuestion, TestResult
 
 
 class TestAdmin(admin.ModelAdmin):
-    list_display = ['id', 'science', 'language', 'questions_count', 'is_confirm']
+    list_display = ['id', 'science', 'language', 'questions_count', 'is_confirm', 'olympiad_test']
 
 
 admin.site.register(Test, TestAdmin)

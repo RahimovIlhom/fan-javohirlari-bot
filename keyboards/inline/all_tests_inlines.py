@@ -10,24 +10,44 @@ async def make_callback(test_id, update='0'):
     return test_callback_data.new(test_id, update)
 
 
-async def create_all_tests_markup(science):
-    markup = InlineKeyboardMarkup(row_width=2)
-    all_tests = await db.select_science_tests(science)
-    for test_info in all_tests:
-        if test_info[5]:
-            markup.insert(
-                InlineKeyboardButton(
-                    text=f"{test_info[2]} - {test_info[3][:2]}, "
-                         f"{len(await db.select_questions_test_id(test_info[0]))}/{test_info[4]} ✅",
-                    callback_data=await make_callback(test_info[0]))
-            )
-        else:
-            markup.insert(
-                InlineKeyboardButton(
-                    text=f"{test_info[2]} - {test_info[3][:2]}, "
-                         f"{len(await db.select_questions_test_id(test_info[0]))}/{test_info[4]} ♻️",
-                    callback_data=await make_callback(test_info[0]))
-            )
+async def create_all_tests_markup(science, olympiad_test=False):
+    # ('id', 'science', 'create_time', 'language', 'questions_count', 'is_confirm',
+    # 'end_time', 'olympiad_test', 'start_time')
+    all_tests = await db.select_science_tests(science, olympiad_test)
+    if olympiad_test:
+        markup = InlineKeyboardMarkup(row_width=1)
+        for test_info in all_tests:
+            if test_info[5]:
+                markup.insert(
+                    InlineKeyboardButton(
+                        text=f"stop: {test_info[6][:10]} - {test_info[3][:2]}, "
+                             f"{len(await db.select_questions_test_id(test_info[0]))}/{test_info[4]} ✅",
+                        callback_data=await make_callback(test_info[0]))
+                )
+            else:
+                markup.insert(
+                    InlineKeyboardButton(
+                        text=f"stop: {test_info[6][:10]} - {test_info[3][:2]}, "
+                             f"{len(await db.select_questions_test_id(test_info[0]))}/{test_info[4]} ♻️",
+                        callback_data=await make_callback(test_info[0]))
+                )
+    else:
+        markup = InlineKeyboardMarkup(row_width=2)
+        for test_info in all_tests:
+            if test_info[5]:
+                markup.insert(
+                    InlineKeyboardButton(
+                        text=f"{test_info[2]} - {test_info[3][:2]}, "
+                             f"{len(await db.select_questions_test_id(test_info[0]))}/{test_info[4]} ✅",
+                        callback_data=await make_callback(test_info[0]))
+                )
+            else:
+                markup.insert(
+                    InlineKeyboardButton(
+                        text=f"{test_info[2]} - {test_info[3][:2]}, "
+                             f"{len(await db.select_questions_test_id(test_info[0]))}/{test_info[4]} ♻️",
+                        callback_data=await make_callback(test_info[0]))
+                )
     markup.row(InlineKeyboardButton('⬅️ Orqaga', callback_data='back'))
     return markup
 
@@ -65,4 +85,3 @@ async def create_questions_markup(questions):
         callback_data='back',
     ))
     return markup
-

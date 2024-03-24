@@ -158,12 +158,12 @@ class Database:
                     """, (test_id,))
         return resp.fetchall()
 
-    async def add_test(self, science, language, count, end_time=None, olympiad_test=False, start_time=None, *args, **kwargs):
+    async def add_test(self, science, language, count, end_time=None, olympiad=False, start_time=None, *args, **kwargs):
         conn = await self.connect
         cur = conn.cursor()
         cur.execute("insert into tests (science, create_time, language, questions_count, is_confirm, "
                     "end_time, olympiad_test, start_time) values (?, ?, ?, ?, ?, ?, ?, ?);",
-                    (science, datetime.datetime.now().date(), language, count, False, end_time, olympiad_test, start_time))
+                    (science, datetime.datetime.now().date(), language, count, False, end_time, olympiad, start_time))
         conn.commit()
 
     async def select_test_id(self, test_id):

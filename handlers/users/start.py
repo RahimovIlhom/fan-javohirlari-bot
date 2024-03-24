@@ -7,7 +7,8 @@ from aiogram.types import ReplyKeyboardRemove, InputFile, ContentType
 
 from data.config import ADMINS, CHANNELS
 from filters import IsPrivate
-from keyboards.default import language_markup, menu_markup, menu_test_ru, menu_test_uz
+from keyboards.default import language_markup, menu_markup, menu_test_ru, menu_test_uz, id_card_ru_markup, \
+    id_card_uz_markup
 from keyboards.inline.checksubs import make_check_channels_subs
 from loader import dp, db, bot
 from states import RegisterStatesGroup, PINFLStateGroup
@@ -28,15 +29,17 @@ async def bot_start(message: types.Message, state: FSMContext):
                 result = "⚠️ Botdan foydalanish uchun ID-kartangizdagi Shaxsiy raqamingizni kiriting:"
                 image = InputFile('data/images/pinfl.jpg')
                 image_url = "http://telegra.ph//file/97b3043fbcdc89ba48360.jpg"
+                markup = id_card_uz_markup
             else:
                 result = ("⚠️ Введите персональный идентификационный номер, указанный в вашем ID-карте, "
                           "чтобы воспользоваться ботом:")
                 image = InputFile('data/images/pinfl_ru.jpg')
                 image_url = "http://telegra.ph//file/e815e58a3c4c08948b617.jpg"
+                markup = id_card_ru_markup
             try:
-                await message.answer_photo(image_url, caption=result, reply_markup=ReplyKeyboardRemove())
+                await message.answer_photo(image_url, caption=result, reply_markup=markup)
             except:
-                await message.answer_photo(image, caption=result, reply_markup=ReplyKeyboardRemove())
+                await message.answer_photo(image, caption=result, reply_markup=markup)
 
             await state.set_data({'language': user[2]})
             await PINFLStateGroup.pinfl.set()
@@ -76,22 +79,24 @@ async def add_pinfl_user(msg: types.Message, state: FSMContext):
     data = await state.get_data()
     language = data.get('language')
     if language == 'uzbek':
-        if len(msg.text) != 14:
-            await msg.answer("Shaxsiy raqam to'g'ri kiritilmadi!\nIltimos qayta kiriting:")
-            return
-        if not msg.text.isnumeric():
-            await msg.answer("Shaxsiy raqam faqat raqamlardan tashkil topadi!\nIltimos qayta kiriting:")
-            return
+        if msg.text != "Hali ID karta olmaganman":
+            if len(msg.text) != 14:
+                await msg.answer("Shaxsiy raqam to'g'ri kiritilmadi!\nIltimos qayta kiriting:")
+                return
+            if not msg.text.isnumeric():
+                await msg.answer("Shaxsiy raqam faqat raqamlardan tashkil topadi!\nIltimos qayta kiriting:")
+                return
         info = "Ma'lumot saqlandi.\nTest topshirish uchun quyidagi tugmadan foydalaning 👇"
         markup = menu_test_uz
     else:
-        if len(msg.text) != 14:
-            await msg.answer("Персональный идентификационный номер введен неверно!\nПожалуйста, введите еще раз:")
-            return
-        if not msg.text.isnumeric():
-            await msg.answer("Персональный идентификационный номер должен состоять только из цифр!\nПожалуйста, "
-                             "введите еще раз:")
-            return
+        if msg.text != "Я еще не получил(а) ID-карту":
+            if len(msg.text) != 14:
+                await msg.answer("Персональный идентификационный номер введен неверно!\nПожалуйста, введите еще раз:")
+                return
+            if not msg.text.isnumeric():
+                await msg.answer("Персональный идентификационный номер должен состоять только из цифр!\nПожалуйста, "
+                                 "введите еще раз:")
+                return
         info = "Информация сохранена.\nИспользуйте кнопку ниже, чтобы пройти тест 👇"
         markup = menu_test_ru
     await db.update_pinfl(msg.from_user.id, msg.text)
@@ -154,11 +159,13 @@ async def checker(call: types.CallbackQuery, state: FSMContext):
                               disable_web_page_preview=True)
 
 
-# @dp.message_handler(content_types=[ContentType.TEXT, ContentType.PHOTO])
-# async def send_cer(msg: types.Message):
-#     image_path = await create_certificate(1234657, 2, 'Rahimov Ilhomjon Iqboljon o\'g\'li')
-#     image_url = await photo_link(image_path)
-#     print(image_url)
-#     await msg.answer_photo(image_url, caption="Sertifikatingiz")
-#     if os.path.exists(image_path):
-#         os.remove(image_path)
+@dp.callback_query_handler(text="download_certificate")
+async def send_cer(call: types.CallbackQuery):
+    await call.message.delete()
+    user = await db.select_user(call.from_user.id)
+    test_result = await db.select_result_test_user(call.from_user.id, user[8], True)
+    if test_result:
+        if test_result[13]:
+            await call.message.answer_photo(test_result[13])
+            return
+    await call.message.answer("Certificate not found")

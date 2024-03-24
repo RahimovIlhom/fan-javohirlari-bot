@@ -9,6 +9,7 @@ BOT_TOKEN = env.str("BOT_TOKEN")  # Bot toekn
 ADMINS = env.list("ADMINS")  # adminlar ro'yxati
 IP = env.str("ip")  # Xosting ip manzili
 CHANNELS = ['@botsinov2024']
+# CHANNELS = ['@fanjavohirlari']
 
 regions_uz = [
     "Toshkent shahri",

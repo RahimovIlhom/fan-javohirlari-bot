@@ -1,3 +1,4 @@
+import os
 import time
 
 from aiogram import types
@@ -76,8 +77,10 @@ async def send_test_result_excel(call: types.CallbackQuery, state: FSMContext):
         for res in responses:
             user_result.append(res)
         new_result.append(user_result)
-    await write_data_excel(columns, new_result, file_path=test[2])
-    file = InputFile(path_or_bytesio=f"data/users/{test[2]}.xlsx")
+    file_path = await write_data_excel(columns, new_result, file_path=test[2])
+    file = InputFile(path_or_bytesio=file_path)
+    if os.path.exists(file_path):
+        os.remove(file_path)
     await call.message.answer_document(file, caption="Barcha o'quvchilar ro'yxati!")
 
 

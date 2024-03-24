@@ -7,3 +7,4 @@ from .variants_inlines import variants
 from .question_inlines import create_edit_question_markup, question_callback_data
 from .result_test_inlines import day_tests_markup
 from .checksubs import make_check_channels_subs
+from .certificate_inlines import download_certificate_markup_uz, download_certificate_markup_ru

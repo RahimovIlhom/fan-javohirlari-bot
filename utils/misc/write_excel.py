@@ -22,5 +22,4 @@ async def write_data_excel(columns, data, file_path='data'):
             sheet.write(row_num, col_num, cell_data, data_format)
 
     workbook.close()
-
-    # print(f'Ma\'lumotlar {excel_file_path} fayliga yozildi.')
+    return excel_file_path

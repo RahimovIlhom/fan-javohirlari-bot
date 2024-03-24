@@ -1,4 +1,5 @@
 import datetime
+import os
 import time
 
 import pytz
@@ -8,10 +9,13 @@ from aiogram.dispatcher import FSMContext
 
 from data.config import sciences_uz, sciences_ru, sciences_dict, responses_uz, responses_ru
 from filters import IsPrivate
-from keyboards.default import sciences_uz_markup, sciences_ru_markup, menu_test_ru, menu_test_uz
-from keyboards.inline import start_test_markup_uz, start_test_markup_ru, make_keyboard_test_responses, callback_data
+from keyboards.default import sciences_uz_markup, sciences_ru_markup, menu_test_ru, menu_test_uz, id_card_uz_markup, \
+    id_card_ru_markup
+from keyboards.inline import start_test_markup_uz, start_test_markup_ru, make_keyboard_test_responses, callback_data, \
+    download_certificate_markup_uz, download_certificate_markup_ru
 from loader import dp, db
 from states import TestStatesGroup, PINFLStateGroup
+from utils.misc.create_certificate import create_certificate, photo_link
 
 
 @dp.message_handler(IsPrivate(), text="👨‍💻 TEST TOPSHIRISH")
@@ -27,9 +31,9 @@ async def solution_test_uz(msg: types.Message, state: FSMContext):
         image = InputFile('data/images/pinfl.jpg')
         image_url = "http://telegra.ph//file/97b3043fbcdc89ba48360.jpg"
         try:
-            await msg.answer_photo(image_url, caption=result, reply_markup=ReplyKeyboardRemove())
+            await msg.answer_photo(image_url, caption=result, reply_markup=id_card_uz_markup)
         except:
-            await msg.answer_photo(image, caption=result, reply_markup=ReplyKeyboardRemove())
+            await msg.answer_photo(image, caption=result, reply_markup=id_card_uz_markup)
         await PINFLStateGroup.pinfl.set()
         return
     info = f"Qaysi fandan test topshirmoqchisiz?"
@@ -53,7 +57,8 @@ async def solution_test_uz(msg: types.Message, state: FSMContext):
         return
     if await db.select_result_test_user(msg.from_user.id, user[8], True):
         await msg.answer(f"{user[8]} fanidan olimpiada testini yechib bo'lgansiz!\n"
-                         f"Sertifikatingizni yuklab olish uchun quyidagi tugmani bosing.")
+                         f"Sertifikatingizni yuklab olish uchun quyidagi tugmani bosing.",
+                         reply_markup=download_certificate_markup_uz)
         return
     tashkent_timezone = pytz.timezone('Asia/Tashkent')
     start_localized_datetime = tashkent_timezone.localize(datetime.datetime.strptime(test_app[8][:10], '%Y-%m-%d'))
@@ -92,7 +97,8 @@ async def solution_test_uz(msg: types.Message, state: FSMContext):
         return
     if await db.select_result_test_user(msg.from_user.id, sciences_dict.get(user[8]), True):
         await msg.answer(f"Вы успешно сдали олимпиадный тест по {user[8]} предмету!\n"
-                         f"Для загрузки вашего сертификата нажмите на следующую кнопку.")
+                         f"Для загрузки вашего сертификата нажмите на следующую кнопку.",
+                         reply_markup=download_certificate_markup_ru)
         return
     tashkent_timezone = pytz.timezone('Asia/Tashkent')
     start_localized_datetime = tashkent_timezone.localize(datetime.datetime.strptime(test_app[8][:10], '%Y-%m-%d'))
@@ -133,9 +139,9 @@ async def solution_test_ru(msg: types.Message, state: FSMContext):
         image = InputFile('data/images/pinfl_ru.jpg')
         image_url = "http://telegra.ph//file/e815e58a3c4c08948b617.jpg"
         try:
-            await msg.answer_photo(image_url, caption=result, reply_markup=ReplyKeyboardRemove())
+            await msg.answer_photo(image_url, caption=result, reply_markup=id_card_ru_markup)
         except:
-            await msg.answer_photo(image, caption=result, reply_markup=ReplyKeyboardRemove())
+            await msg.answer_photo(image, caption=result, reply_markup=id_card_ru_markup)
         await PINFLStateGroup.pinfl.set()
         return
     info = f"Из какого предмета вы хотите сдать тест?"
@@ -287,22 +293,51 @@ async def select_response(call: types.CallbackQuery, callback_data: dict, state:
     # test savollari tugaganligini tekshirish
     if number >= count:
         user = await db.select_user(call.from_user.id)
+        olympiad_test = data.get('olympiad_test')
         db_responses = ''.join(
-            map(lambda x, y: '1' if x == y else '0', responses, user_resp if user_resp else '' + current_resp))
-        await db.add_test_result(test_id, call.from_user.id, data.get('language'), *user[3:8], data.get('science'),
-                                 db_responses, datetime.datetime.now(), user[-1])
-        if data.get('language') == 'uzbek':
-            await call.message.answer("✅ Test yakunlandi!\n"
-                                      f"Hurmatli {user[3]}, siz test savollarining "
-                                      f"{db_responses.count('1')} tasiga to’g’ri va {db_responses.count('0')} "
-                                      f"tasiga noto’g’ri javob berdingiz.",
-                                      reply_markup=menu_test_uz)
+            map(lambda x, y: '1' if x == y else '0', responses, user_resp + current_resp))
+        result = db_responses.count('1') / len(db_responses)
+        if olympiad_test:
+            if result >= 0.85:
+                image_index = 2
+            elif result >= 0.7:
+                image_index = 1
+            elif result > 0.5:
+                image_index = 0
+            elif result >= 0.35:
+                image_index = 3
+            else:
+                image_index = 3
+            image_path = await create_certificate(user[1], image_index, user[3])
+            image_url = await photo_link(image_path)
+            if os.path.exists(image_path):
+                os.remove(image_path)
+            info_uz = (f"✅ Olimpiada testi yakunlandi!\nHurmatli {user[3]}, siz test savollarining {db_responses.count('1')} "
+                       f"tasiga to’g’ri va {db_responses.count('0')} tasiga noto’g’ri javob berdingiz.")
+            info_ru = (f"✅ Олимпиадный тест завершен!\nУважаемый(ая) {user[3]}, Вы ответили на {db_responses.count('1')} "
+                       f"вопросов теста правильно, а на {db_responses.count('0')} — неправильно.")
+            if data.get('language') == 'uzbek':
+                await call.message.answer(info_uz, reply_markup=menu_test_uz)
+                await call.message.answer("Sizni sertifikat bilan tabriklaymiz!", reply_markup=download_certificate_markup_uz)
+            else:
+                await call.message.answer(info_ru, reply_markup=menu_test_ru)
+                await call.message.answer("Поздравляем вас с сертификатом!", reply_markup=download_certificate_markup_ru)
         else:
-            await call.message.answer("✅ Тест завершен!\n"
-                                      f"Уважаемый(ая) {user[3]}, Вы ответили на "
-                                      f"{db_responses.count('1')} вопросов теста правильно, а на "
-                                      f"{db_responses.count('0')} — неправильно",
-                                      reply_markup=menu_test_ru)
+            image_url = None
+            if data.get('language') == 'uzbek':
+                await call.message.answer("✅ Test yakunlandi!\n"
+                                          f"Hurmatli {user[3]}, siz test savollarining "
+                                          f"{db_responses.count('1')} tasiga to’g’ri va {db_responses.count('0')} "
+                                          f"tasiga noto’g’ri javob berdingiz.",
+                                          reply_markup=menu_test_uz)
+            else:
+                await call.message.answer("✅ Тест завершен!\n"
+                                          f"Уважаемый(ая) {user[3]}, Вы ответили на "
+                                          f"{db_responses.count('1')} вопросов теста правильно, а на "
+                                          f"{db_responses.count('0')} — неправильно.",
+                                          reply_markup=menu_test_ru)
+        await db.add_test_result(test_id, call.from_user.id, data.get('language'), *user[3:8], data.get('science'),
+                                 db_responses, datetime.datetime.now(), user[-1], image_url)
         await state.reset_state()
         await state.finish()
         return

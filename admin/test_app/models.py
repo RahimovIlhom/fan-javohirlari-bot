@@ -53,6 +53,7 @@ class TestResult(models.Model):
     result_time = models.DateTimeField(auto_now_add=True)
     test = models.ForeignKey(Test, on_delete=models.SET_NULL, null=True, blank=True)
     pinfl = models.CharField(max_length=14, null=True, blank=True)
+    certificate_image = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
         db_table = 'test_result'

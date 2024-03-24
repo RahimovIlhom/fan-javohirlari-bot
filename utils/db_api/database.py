@@ -70,33 +70,36 @@ class Database:
         names = tuple(map(lambda x: x[0], resp.description))
         return names
 
-    async def select_result_test_user(self, tg_id, science):
+    async def select_result_test_user(self, tg_id, science, olympiad_test=False):
         conn = await self.connect
         cur = conn.cursor()
-        test_id = cur.execute(f"SELECT * FROM tests WHERE science = ? and is_confirm = ?",
+        test_id = cur.execute(f"SELECT * FROM tests WHERE science = ? and is_confirm = ? and olympiad_test = ?",
                               (science, True)).fetchall()[-1][0]
         resp = cur.execute(f"SELECT * FROM test_result WHERE tg_id = ? and test_id = ?", (tg_id, test_id))
         return resp.fetchone()
 
-    async def select_test(self, science, language=None):
+    async def select_test(self, science, language=None, olympiad_test=False):
         conn = await self.connect
         cur = conn.cursor()
-        # (8, 'ONA TILI', '2024-02-26', 'uzbek', 30, 1)
+        # ('id', 'science', 'create_time', 'language', 'questions_count', 'is_confirm',
+        # 'end_time', 'olympiad_test', 'start_time')
+        # (15, 'FIZIKA', '2024-03-02', 'uzbek', 4, 1, None, 1, None)
         if language is None:
-            sql_query = f"SELECT * FROM tests WHERE science = ? and is_confirm = ?"
-            resp = cur.execute(sql_query, (science, True)).fetchall()
+            sql_query = f"SELECT * FROM tests WHERE science = ? and is_confirm = ? and olympiad_test=?"
+            resp = cur.execute(sql_query, (science, True, olympiad_test)).fetchall()
         else:
-            sql_query = f"SELECT * FROM tests WHERE science = ? and is_confirm = ? and language = ?"
+            sql_query = f"SELECT * FROM tests WHERE science = ? and is_confirm = ? and language = ? and olympiad_test=?"
             resp = cur.execute(sql_query,
-                               (science, True, language)).fetchall()
+                               (science, True, language, olympiad_test)).fetchall()
         if resp:
             return resp[-1]
         return False
 
-    async def select_tests(self, science):
+    async def select_tests(self, science, olympiad_test=False):
         conn = await self.connect
         cur = conn.cursor()
-        resp = cur.execute(f"SELECT * FROM tests WHERE science = ? and is_confirm = ?", (science, True)).fetchall()
+        resp = cur.execute(f"SELECT * FROM tests WHERE science = ? and is_confirm = ? and olympiad_test = ?",
+                           (science, True, olympiad_test)).fetchall()
         if resp:
             return resp
         return False
@@ -115,21 +118,22 @@ class Database:
         return resp.fetchone()
 
     async def add_test_result(self, test_id, tg_id, language, fullname, phone_number, region, district, school_number,
-                              science, responses, result_time, pinfl=None, *args, **kwargs):
+                              science, responses, result_time, pinfl=None, certificate_image=None, *args, **kwargs):
         conn = await self.connect
         cur = conn.cursor()
         sql_query = ("INSERT INTO test_result (tg_id, language, fullname, phone_number, region, district, "
-                     "school_number, science, responses, result_time, test_id, pinfl) VALUES (?, ?, ?, ?, ?, ?, ?, ?, "
-                     "?, ?, ?, ?);")
+                     "school_number, science, responses, result_time, test_id, pinfl, certificate_image) VALUES (?, "
+                     "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")
         cur.execute(sql_query, (
             tg_id, language, fullname, phone_number, region, district, school_number, science, responses, result_time,
-            test_id, pinfl))
+            test_id, pinfl, certificate_image))
         conn.commit()
 
-    async def select_science_tests(self, science):
+    async def select_science_tests(self, science, olympiad_test=False):
         conn = await self.connect
         cur = conn.cursor()
-        resp = cur.execute("select * from tests where science = ?", (science,)).fetchall()
+        resp = cur.execute("select * from tests where science = ? and olympiad_test = ?",
+                           (science, olympiad_test)).fetchall()
         if resp:
             return resp[::-1]
         return False
@@ -154,12 +158,12 @@ class Database:
                     """, (test_id,))
         return resp.fetchall()
 
-    async def add_test(self, science, language, count, *args, **kwargs):
+    async def add_test(self, science, language, count, end_time=None, olympiad_test=False, start_time=None, *args, **kwargs):
         conn = await self.connect
         cur = conn.cursor()
-        cur.execute("insert into tests (science, create_time, language, questions_count, is_confirm) "
-                    "values (?, ?, ?, ?, ?);",
-                    (science, datetime.datetime.now().date(), language, count, False))
+        cur.execute("insert into tests (science, create_time, language, questions_count, is_confirm, "
+                    "end_time, olympiad_test, start_time) values (?, ?, ?, ?, ?, ?, ?, ?);",
+                    (science, datetime.datetime.now().date(), language, count, False, end_time, olympiad_test, start_time))
         conn.commit()
 
     async def select_test_id(self, test_id):

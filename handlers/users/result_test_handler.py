@@ -56,7 +56,7 @@ async def send_test_result_excel(call: types.CallbackQuery, state: FSMContext):
     test_id = call.data
     columns = list(await db.select_test_result_column_names())
     # ['id', 'tg_id', 'language', 'fullname', 'phone_number', 'region', 'district', 'school_number',
-    # 'science', 'responses', 'result_time', 'test_id', 'pinfl']
+    # 'science', 'responses', 'result_time', 'test_id', 'pinfl', 'certificate_image']
     result = await db.select_test_result(test_id)
     columns.pop()
     columns.pop()

@@ -32,6 +32,24 @@ phone_ru_markup = ReplyKeyboardMarkup(
     resize_keyboard=True
 )
 
+id_card_uz_markup = ReplyKeyboardMarkup(
+    keyboard=[
+        [
+            KeyboardButton(text="Hali ID karta olmaganman"),
+        ],
+    ],
+    resize_keyboard=True
+)
+
+id_card_ru_markup = ReplyKeyboardMarkup(
+    keyboard=[
+        [
+            KeyboardButton(text="Я еще не получил(а) ID-карту"),
+        ],
+    ],
+    resize_keyboard=True
+)
+
 region_uz_markup = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
 for region in regions_uz:
     region_uz_markup.insert(KeyboardButton(text=region))

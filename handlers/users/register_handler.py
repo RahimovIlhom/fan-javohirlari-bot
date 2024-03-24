@@ -8,7 +8,7 @@ from aiogram.types import ContentType, ReplyKeyboardRemove, InputFile
 from data.config import regions_uz, regions_ru, sciences_uz, sciences_ru, CHANNELS
 from keyboards.default import phone_ru_markup, phone_uz_markup, language_markup, region_uz_markup, region_ru_markup, \
     district_uz_markup, district_ru_markup, back_uz_button, back_ru_button, sciences_uz_markup, sciences_ru_markup, \
-    make_lessons_uz_markup, make_lessons_ru_markup, menu_test_uz, menu_test_ru
+    make_lessons_uz_markup, make_lessons_ru_markup, menu_test_uz, menu_test_ru, id_card_uz_markup, id_card_ru_markup
 from keyboards.inline import make_check_channels_subs
 from loader import dp, db, bot
 from states import RegisterStatesGroup
@@ -76,6 +76,7 @@ async def send_phone(msg: types.Message, state: FSMContext):
         info = "ID-kartangizdagi Shaxsiy raqamingizni kiriting:"
         image = InputFile('data/images/pinfl.jpg')
         image_url = "http://telegra.ph//file/97b3043fbcdc89ba48360.jpg"
+        markup = id_card_uz_markup
     else:
         if data.get('re_register') is None:
             if await db.select_user_phone(msg.contact.phone_number):
@@ -84,10 +85,11 @@ async def send_phone(msg: types.Message, state: FSMContext):
         info = "Введите персональный идентификационный номер, указанный на ID-карте:"
         image = InputFile('data/images/pinfl_ru.jpg')
         image_url = "http://telegra.ph//file/e815e58a3c4c08948b617.jpg"
+        markup = id_card_ru_markup
     try:
-        await msg.answer_photo(image_url, caption=info, reply_markup=ReplyKeyboardRemove())
+        await msg.answer_photo(image_url, caption=info, reply_markup=markup)
     except:
-        await msg.answer_photo(image, caption=info, reply_markup=ReplyKeyboardRemove())
+        await msg.answer_photo(image, caption=info, reply_markup=markup)
     await RegisterStatesGroup.next()
 
 
@@ -110,22 +112,24 @@ async def send_pinfl(msg: types.Message, state: FSMContext):
     data = await state.get_data()
     language = data.get('language')
     if language == 'uzbek':
-        if len(msg.text) != 14:
-            await msg.answer("Shaxsiy raqam to'g'ri kiritilmadi!\nIltimos qayta kiriting:")
-            return
-        if not msg.text.isnumeric():
-            await msg.answer("Shaxsiy raqam faqat raqamlardan tashkil topadi!\nIltimos qayta kiriting:")
-            return
+        if msg.text != "Hali ID karta olmaganman":
+            if len(msg.text) != 14:
+                await msg.answer("Shaxsiy raqam to'g'ri kiritilmadi!\nIltimos qayta kiriting:")
+                return
+            if not msg.text.isnumeric():
+                await msg.answer("Shaxsiy raqam faqat raqamlardan tashkil topadi!\nIltimos qayta kiriting:")
+                return
         info = "O’zbekistonning qaysi hududidansiz?"
         markup = region_uz_markup
     else:
-        if len(msg.text) != 14:
-            await msg.answer("Персональный идентификационный номер введен неверно!\nПожалуйста, введите еще раз:")
-            return
-        if not msg.text.isnumeric():
-            await msg.answer("Персональный идентификационный номер должен состоять только из цифр!\nПожалуйста, "
-                             "введите еще раз:")
-            return
+        if msg.text != "Я еще не получил(а) ID-карту":
+            if len(msg.text) != 14:
+                await msg.answer("Персональный идентификационный номер введен неверно!\nПожалуйста, введите еще раз:")
+                return
+            if not msg.text.isnumeric():
+                await msg.answer("Персональный идентификационный номер должен состоять только из цифр!\nПожалуйста, "
+                                 "введите еще раз:")
+                return
         info = "В каком регионе Узбекистана вы проживаете?"
         markup = region_ru_markup
     await msg.answer(info, reply_markup=markup)

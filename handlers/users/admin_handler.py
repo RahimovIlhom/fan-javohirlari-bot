@@ -28,14 +28,23 @@ async def show_users_excel(msg: types.Message, state: FSMContext):
     await state.set_state('send_message')
 
 
-@dp.message_handler(user_id=ADMINS, state='send_message')
+@dp.message_handler(user_id=ADMINS, state='send_message', content_types=[ContentType.TEXT, ContentType.PHOTO])
 async def send_msg_to_all_users(msg: types.Message, state: FSMContext):
     users = await db.select_users()
-    for user in users:
-        try:
-            await bot.send_message(user[1], msg.text)
-        except Exception as e:
-            print(f"Failed to send message to user {user[1]}: {e}")
+    photos = msg.photo
+    if photos:
+        photo_id = photos[-1].file_id
+        for user in users:
+            try:
+                await bot.send_photo(user[1], photo=photo_id, caption=msg.caption)
+            except Exception as e:
+                print(f"Failed to send message to user {user[1]}: {e}")
+    else:
+        for user in users:
+            try:
+                await bot.send_message(user[1], msg.text)
+            except Exception as e:
+                print(f"Failed to send message to user {user[1]}: {e}")
     await msg.answer("Xabar barcha foydalanuvchilarga yuborildi!", reply_markup=menu_markup)
     await state.finish()
 

@@ -3,7 +3,7 @@ import os
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.builtin import CommandStart
-from aiogram.types import ReplyKeyboardRemove, InputFile
+from aiogram.types import ReplyKeyboardRemove, InputFile, ContentType
 
 from data.config import ADMINS, CHANNELS
 from filters import IsPrivate
@@ -153,7 +153,8 @@ async def checker(call: types.CallbackQuery, state: FSMContext):
     await call.message.answer(result, reply_markup=await make_check_channels_subs(channels, lang=user[2]),
                               disable_web_page_preview=True)
 
-# @dp.message_handler(commands=['cer'])
+
+# @dp.message_handler(content_types=[ContentType.TEXT, ContentType.PHOTO])
 # async def send_cer(msg: types.Message):
 #     image_path = await create_certificate(1234657, 2, 'Rahimov Ilhomjon Iqboljon o\'g\'li')
 #     image_url = await photo_link(image_path)

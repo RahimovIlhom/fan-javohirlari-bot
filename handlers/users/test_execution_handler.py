@@ -1,6 +1,7 @@
 import datetime
 import time
 
+import pytz
 from aiogram import types
 from aiogram.types import ReplyKeyboardRemove, ContentType, InlineKeyboardMarkup, InputFile
 from aiogram.dispatcher import FSMContext
@@ -13,7 +14,7 @@ from loader import dp, db
 from states import TestStatesGroup, PINFLStateGroup
 
 
-@dp.message_handler(IsPrivate(), text="TEST TOPSHIRISH")
+@dp.message_handler(IsPrivate(), text="👨‍💻 TEST TOPSHIRISH")
 async def solution_test_uz(msg: types.Message, state: FSMContext):
     user = await db.select_user(msg.from_user.id)
     if user is None:
@@ -36,7 +37,89 @@ async def solution_test_uz(msg: types.Message, state: FSMContext):
     await state.set_state(TestStatesGroup.science)
 
 
-@dp.message_handler(IsPrivate(), text="ПРОЙТИ ТЕСТ")
+# (2, '5442563505', 'uzbek', 'Ilhomjon Raximov', '+998336589340', 'Buxoro viloyati',
+# 'Olot tumani', '3', 'BIOLOGIYA', '2024-03-24 23:47:50.025367', '2024-03-24 23:47:50.025370',
+# '-', '-', '-', 'Hali ID karta olmaganman')
+@dp.message_handler(IsPrivate(), text="🏆 OLIMPIADA (1-bosqich)")
+async def solution_test_uz(msg: types.Message, state: FSMContext):
+    user = await db.select_user(msg.from_user.id)
+    if user is None:
+        await msg.answer("‼️ Siz ro'yxatdan o'tmaganingiz uchun olimpiadada qatnasha olmaysiz!\n"
+                         "Ro'yxatdan o'tish uchun - /start", reply_markup=ReplyKeyboardRemove())
+        return
+    test_app = await db.select_test(user[8], 'uzbek', True)
+    if test_app is False:
+        await msg.answer(f"Hozirda {user[8]} fanidan olimpiada testi mavjud emas!")
+        return
+    if await db.select_result_test_user(msg.from_user.id, user[8], True):
+        await msg.answer(f"{user[8]} fanidan olimpiada testini yechib bo'lgansiz!\n"
+                         f"Sertifikatingizni yuklab olish uchun quyidagi tugmani bosing.")
+        return
+    tashkent_timezone = pytz.timezone('Asia/Tashkent')
+    start_localized_datetime = tashkent_timezone.localize(datetime.datetime.strptime(test_app[8][:10], '%Y-%m-%d'))
+    stop_localized_datetime = tashkent_timezone.localize(datetime.datetime.strptime(test_app[6][:10], '%Y-%m-%d'))
+    now_localized_datetime = tashkent_timezone.localize(datetime.datetime.now())
+    if now_localized_datetime < start_localized_datetime:
+        await msg.answer(f"{user[8]} fanidan olimpiada test sinovlari {test_app[8][:10]} soat 00:00da boshlanadi!")
+    elif now_localized_datetime < stop_localized_datetime:
+        info = (f"OLIMPIADA (1-bosqich)\n\n{user[8]} fani uchun olimpiada testi.\n\n"
+                f"📝 Savollar soni: {test_app[4]}\n\n"
+                f"Testni boshlash uchun \"👨‍💻 Testni boshlash\" tugmasini bosing!")
+        markup = start_test_markup_uz
+        await state.update_data(
+            {'language': 'uzbek', 'test_id': test_app[0], 'questions_count': test_app[4], 'science': user[8],
+             'olympiad_test': True})
+        success = "✅ Olimpiada davom etmoqda!"
+        await state.set_state(TestStatesGroup.ready)
+        message = await msg.answer(success, reply_markup=ReplyKeyboardRemove())
+        await msg.answer(info, reply_markup=markup)
+        time.sleep(2)
+        await message.delete()
+    else:
+        await msg.answer(f"{user[8]} fanidan olimpiada test sinovlari {test_app[6][:10]} soat 00:00da yakunlangan!")
+
+
+@dp.message_handler(IsPrivate(), text="🏆 ОЛИМПИАДА (1-й этап)")
+async def solution_test_uz(msg: types.Message, state: FSMContext):
+    user = await db.select_user(msg.from_user.id)
+    if user is None:
+        await msg.answer("‼️ Вы не сможете участвовать в олимпиаде, так как не прошли регистрацию!\n"
+                         "Для регистрации - /start", reply_markup=ReplyKeyboardRemove())
+        return
+    test_app = await db.select_test(sciences_dict.get(user[8]), 'russian', True)
+    if test_app is False:
+        await msg.answer(f"Сейчас нет олимпиадного теста по {user[8]} предмету!")
+        return
+    if await db.select_result_test_user(msg.from_user.id, sciences_dict.get(user[8]), True):
+        await msg.answer(f"Вы успешно сдали олимпиадный тест по {user[8]} предмету!\n"
+                         f"Для загрузки вашего сертификата нажмите на следующую кнопку.")
+        return
+    tashkent_timezone = pytz.timezone('Asia/Tashkent')
+    start_localized_datetime = tashkent_timezone.localize(datetime.datetime.strptime(test_app[8][:10], '%Y-%m-%d'))
+    stop_localized_datetime = tashkent_timezone.localize(datetime.datetime.strptime(test_app[6][:10], '%Y-%m-%d'))
+    now_localized_datetime = tashkent_timezone.localize(datetime.datetime.now())
+    if now_localized_datetime < start_localized_datetime:
+        await msg.answer(f"Олимпиадное тестирование по {user[8]} начнется {test_app[8][:10]} в 00:00!")
+    elif now_localized_datetime < stop_localized_datetime:
+        info = (f"ОЛИМПИАДА (1-й этап)\n\n"
+                f"Тест по предмету {user[8]} для олимпиады.\n\n"
+                f"📝 Количество вопросов: {test_app[4]}\n\n"
+                f"Нажмите кнопку \"👨‍💻 Начать тест\" для начала тестирования!")
+        markup = start_test_markup_ru
+        await state.update_data(
+            {'language': 'russian', 'test_id': test_app[0], 'questions_count': test_app[4], 'science': user[8],
+             'olympiad_test': True})
+        success = "✅ Олимпиада продолжается!"
+        await state.set_state(TestStatesGroup.ready)
+        message = await msg.answer(success, reply_markup=ReplyKeyboardRemove())
+        await msg.answer(info, reply_markup=markup)
+        time.sleep(2)
+        await message.delete()
+    else:
+        await msg.answer(f"Тест по {user[8]} для олимпиады завершён {test_app[6][:10]} в 00:00!")
+
+
+@dp.message_handler(IsPrivate(), text="👨‍💻 ПРОЙТИ ТЕСТ")
 async def solution_test_ru(msg: types.Message, state: FSMContext):
     user = await db.select_user(msg.from_user.id)
     if user is None:
@@ -84,7 +167,7 @@ async def choice_test_science(msg: types.Message, state: FSMContext):
             return
         test_app = await db.select_test(msg.text, data.get('language'))
         if test_app is False:
-            await msg.answer("Hali test mavjud emas!")
+            await msg.answer(f"Hozirda {msg.text} fanidan test mavjud emas!")
             return
         if await db.select_result_test_user(msg.from_user.id, msg.text):
             await msg.answer("Bu testni allaqachon yechib bo'lgansiz!\n"
@@ -102,7 +185,7 @@ async def choice_test_science(msg: types.Message, state: FSMContext):
             return
         test_app = await db.select_test(sciences_dict.get(msg.text), data.get('language'))
         if test_app is False:
-            await msg.answer("Тест еще не существует!")
+            await msg.answer(f"Сейчас нет теста по {msg.text}!")
             return
         if await db.select_result_test_user(msg.from_user.id, sciences_dict.get(msg.text)):
             await msg.answer("Вы уже завершили этот тест!\n"
@@ -205,7 +288,7 @@ async def select_response(call: types.CallbackQuery, callback_data: dict, state:
     if number >= count:
         user = await db.select_user(call.from_user.id)
         db_responses = ''.join(
-            map(lambda x, y: '1' if x == y else '0', responses, user_resp + current_resp))
+            map(lambda x, y: '1' if x == y else '0', responses, user_resp if user_resp else '' + current_resp))
         await db.add_test_result(test_id, call.from_user.id, data.get('language'), *user[3:8], data.get('science'),
                                  db_responses, datetime.datetime.now(), user[-1])
         if data.get('language') == 'uzbek':

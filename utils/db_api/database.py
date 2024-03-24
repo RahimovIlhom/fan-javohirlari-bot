@@ -74,7 +74,7 @@ class Database:
         conn = await self.connect
         cur = conn.cursor()
         test_id = cur.execute(f"SELECT * FROM tests WHERE science = ? and is_confirm = ? and olympiad_test = ?",
-                              (science, True)).fetchall()[-1][0]
+                              (science, True, olympiad_test)).fetchall()[-1][0]
         resp = cur.execute(f"SELECT * FROM test_result WHERE tg_id = ? and test_id = ?", (tg_id, test_id))
         return resp.fetchone()
 
@@ -83,6 +83,7 @@ class Database:
         cur = conn.cursor()
         # ('id', 'science', 'create_time', 'language', 'questions_count', 'is_confirm',
         # 'end_time', 'olympiad_test', 'start_time')
+
         # (15, 'FIZIKA', '2024-03-02', 'uzbek', 4, 1, None, 1, None)
         if language is None:
             sql_query = f"SELECT * FROM tests WHERE science = ? and is_confirm = ? and olympiad_test=?"

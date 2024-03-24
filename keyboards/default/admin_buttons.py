@@ -12,7 +12,7 @@ menu_markup = ReplyKeyboardMarkup(
             KeyboardButton(text="📊 Test natijalari")
         ],
         [
-            KeyboardButton(text="🗂 Olimpiada bo'limi"),
+            KeyboardButton(text="🏆 Olimpiada bo'limi"),
             KeyboardButton(text="📈 Olimpiada natijalari")
         ],
     ],

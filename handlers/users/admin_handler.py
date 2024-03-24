@@ -63,7 +63,7 @@ async def add_test_or_question(msg: types.Message):
     await msg.answer("Bo'limni tanlang:", reply_markup=tests_markup)
 
 
-@dp.message_handler(IsPrivate(), text="🗂 Olimpiada bo'limi", user_id=ADMINS)
+@dp.message_handler(IsPrivate(), text="🏆 Olimpiada bo'limi", user_id=ADMINS)
 async def add_test_or_question(msg: types.Message):
     await msg.answer("Bo'limni tanlang:", reply_markup=olympiad_tests_markup)
 

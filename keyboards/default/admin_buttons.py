@@ -32,3 +32,17 @@ tests_markup = ReplyKeyboardMarkup(
     ],
     resize_keyboard=True
 )
+
+
+olympiad_tests_markup = ReplyKeyboardMarkup(
+    keyboard=[
+        [
+            KeyboardButton(text="📓 Olimpiada testlari"),
+            KeyboardButton(text="➕ Olimpiada testi ochish")
+        ],
+        [
+            KeyboardButton(text="⬅️ Orqaga")
+        ]
+    ],
+    resize_keyboard=True
+)

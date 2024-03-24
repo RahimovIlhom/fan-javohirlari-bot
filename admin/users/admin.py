@@ -3,7 +3,7 @@ from .models import OlimpistUser, Token
 
 
 class CustomUserAdmin(admin.ModelAdmin):
-    list_display = ['pinfl', 'fullname', 'phone_number', 'olimpia_science']
+    list_display = ['pinfl', 'fullname', 'phone_number', 'olimpia_science', 'update_time']
     search_fields = ['fullname', 'phone_number']
     list_filter = ['olimpia_science', 'region', 'language']
 

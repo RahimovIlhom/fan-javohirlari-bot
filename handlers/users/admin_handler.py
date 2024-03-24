@@ -278,10 +278,21 @@ async def edit_test(call: types.CallbackQuery, callback_data: dict, state: FSMCo
     all_tests = await db.select_questions_test_id(test_id)
     await state.update_data({'tests_count': len(all_tests), 'quantity': test_info[4]})
     if olympiad_test:
-        info = f"{test_info[1]} fani 'stop: {test_info[6][:10]} - {test_info[3][:2]}' <b>olimpiada</b> testi uchun amalni tanlang:\n"
+        tashkent_timezone = pytz.timezone('Asia/Tashkent')
+        start_localized_datetime = tashkent_timezone.localize(datetime.datetime.strptime(test_info[8][:10], '%Y-%m-%d'))
+        stop_localized_datetime = tashkent_timezone.localize(datetime.datetime.strptime(test_info[6][:10], '%Y-%m-%d'))
+        now_localized_datetime = tashkent_timezone.localize(datetime.datetime.now())
+        if now_localized_datetime < start_localized_datetime:
+            status = "⏸ Boshlanmagan!"
+        elif now_localized_datetime < stop_localized_datetime:
+            status = "▶️ Davom etmoqda!"
+        else:
+            status = "⏹ Tugagan!"
+        info = f"{test_info[1]} fani '{test_info[6][:10]} - {test_info[3][:2]}' <b>olimpiada</b> testi uchun amalni tanlang:\n"
+        info += f"Holat: {status}\n"
     else:
         info = f"{test_info[1]} fani {test_info[2]} - {test_info[3][:2]} testi uchun amalni tanlang:\n"
-    info += f"Testlar soni: {len(all_tests)}/{test_info[4]}{'✅' if len(all_tests) >= test_info[4] else ''}"
+    info += f"Testlar soni: {len(all_tests)}/{test_info[4]} {'✅' if len(all_tests) >= test_info[4] else ''}"
     await call.message.edit_text(info, reply_markup=await create_edit_test_markup(test_id))
 
 
@@ -363,10 +374,21 @@ async def choice_set_question(call: types.CallbackQuery, state: FSMContext):
     all_tests = await db.select_questions_test_id(test_id)
     await state.update_data({'tests_count': len(all_tests), 'quantity': test_info[4]})
     if data.get('olympiad'):
-        info = f"{test_info[1]} fani 'stop: {test_info[6][:10]} - {test_info[3][:2]}' <b>olimpiada</b> testi uchun amalni tanlang:\n"
+        tashkent_timezone = pytz.timezone('Asia/Tashkent')
+        start_localized_datetime = tashkent_timezone.localize(datetime.datetime.strptime(test_info[8][:10], '%Y-%m-%d'))
+        stop_localized_datetime = tashkent_timezone.localize(datetime.datetime.strptime(test_info[6][:10], '%Y-%m-%d'))
+        now_localized_datetime = tashkent_timezone.localize(datetime.datetime.now())
+        if now_localized_datetime < start_localized_datetime:
+            status = "⏸ Boshlanmagan!"
+        elif now_localized_datetime < stop_localized_datetime:
+            status = "▶️ Davom etmoqda!"
+        else:
+            status = "⏹ Tugagan!"
+        info = f"{test_info[1]} fani '{test_info[6][:10]} - {test_info[3][:2]}' <b>olimpiada</b> testi uchun amalni tanlang:\n"
+        info += f"Holat: {status}\n"
     else:
         info = f"{test_info[1]} fani {test_info[2]} - {test_info[3][:2]} testi uchun amalni tanlang:\n"
-    info += f"Testlar soni: {len(all_tests)}/{test_info[4]}{'✅' if len(all_tests) >= test_info[4] else ''}"
+    info += f"Testlar soni: {len(all_tests)}/{test_info[4]} {'✅' if len(all_tests) >= test_info[4] else ''}"
     await call.message.edit_text(info, reply_markup=await create_edit_test_markup(test_id))
     await AddQuestionTestStatesGroup.test.set()
 
@@ -426,10 +448,21 @@ async def send_question_uz(msg: types.Message, state: FSMContext):
     await state.update_data({'olympiad': data.get('olympiad'), 'science': science, 'tests_count': len(all_tests),
                              'quantity': test_info[4], 'language': language})
     if data.get('olympiad'):
-        info = f"{test_info[1]} fani 'stop: {test_info[6][:10]} - {test_info[3][:2]}' <b>olimpiada</b> testi uchun amalni tanlang:\n"
+        tashkent_timezone = pytz.timezone('Asia/Tashkent')
+        start_localized_datetime = tashkent_timezone.localize(datetime.datetime.strptime(test_info[8][:10], '%Y-%m-%d'))
+        stop_localized_datetime = tashkent_timezone.localize(datetime.datetime.strptime(test_info[6][:10], '%Y-%m-%d'))
+        now_localized_datetime = tashkent_timezone.localize(datetime.datetime.now())
+        if now_localized_datetime < start_localized_datetime:
+            status = "⏸ Boshlanmagan!"
+        elif now_localized_datetime < stop_localized_datetime:
+            status = "▶️ Davom etmoqda!"
+        else:
+            status = "⏹ Tugagan!"
+        info = f"{test_info[1]} fani '{test_info[6][:10]} - {test_info[3][:2]}' <b>olimpiada</b> testi uchun amalni tanlang:\n"
+        info += f"Holat: {status}\n"
     else:
         info = f"{test_info[1]} fani {test_info[2]} - {test_info[3][:2]} testi uchun amalni tanlang:\n"
-    info += f"Testlar soni: {len(all_tests)}/{test_info[4]}{'✅' if len(all_tests) >= test_info[4] else ''}"
+    info += f"Testlar soni: {len(all_tests)}/{test_info[4]} {'✅' if len(all_tests) >= test_info[4] else ''}"
 
     await msg.answer(info, reply_markup=await create_edit_test_markup(test_id))
     await AddQuestionTestStatesGroup.test.set()

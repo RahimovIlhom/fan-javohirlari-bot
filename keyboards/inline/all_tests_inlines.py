@@ -20,14 +20,14 @@ async def create_all_tests_markup(science, olympiad_test=False):
             if test_info[5]:
                 markup.insert(
                     InlineKeyboardButton(
-                        text=f"stop: {test_info[6][:10]} - {test_info[3][:2]}, "
+                        text=f"{test_info[8][:10]} 🔛 {test_info[6][:10]} - {test_info[3][:2]}, "
                              f"{len(await db.select_questions_test_id(test_info[0]))}/{test_info[4]} ✅",
                         callback_data=await make_callback(test_info[0]))
                 )
             else:
                 markup.insert(
                     InlineKeyboardButton(
-                        text=f"stop: {test_info[6][:10]} - {test_info[3][:2]}, "
+                        text=f"{test_info[8][:10]} 🔛 {test_info[6][:10]} - {test_info[3][:2]}, "
                              f"{len(await db.select_questions_test_id(test_info[0]))}/{test_info[4]} ♻️",
                         callback_data=await make_callback(test_info[0]))
                 )

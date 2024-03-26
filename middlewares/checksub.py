@@ -14,7 +14,7 @@ from loader import bot, db
 class BigBrother(BaseMiddleware):
     async def on_pre_process_update(self, update: types.Update, data: dict):
         if update.message:
-            if update.message.text in ['ПРОЙТИ ТЕСТ', 'TEST TOPSHIRISH']:
+            if update.message.text in ['👨‍💻 TEST TOPSHIRISH', '🏆 OLIMPIADA (1-bosqich)', '👨‍💻 ПРОЙТИ ТЕСТ', '🏆 ОЛИМПИАДА (1-й этап)']:
                 user = update.message.from_user.id
             elif update.message.text in ['/start', '/help', '/re_register']:
                 user = update.message.from_user.id

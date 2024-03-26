@@ -26,13 +26,16 @@ async def bot_start(message: types.Message, state: FSMContext):
     if user:
         if user[-1] is None:
             if user[2] == 'uzbek':
-                result = "⚠️ Botdan foydalanish uchun ID-kartangizdagi Shaxsiy raqamingizni kiriting:"
+                result = (
+                    "⚠️ Botdan foydalanish uchun ID-kartangizdagi Shaxsiy raqamingizni kiriting. ID karta olmagan "
+                    "bo’lsangiz pastda “Hali ID karta olmaganman” tugmasini bosing.")
                 image = InputFile('data/images/pinfl.jpg')
                 image_url = "http://telegra.ph//file/97b3043fbcdc89ba48360.jpg"
                 markup = id_card_uz_markup
             else:
-                result = ("⚠️ Введите персональный идентификационный номер, указанный в вашем ID-карте, "
-                          "чтобы воспользоваться ботом:")
+                result = (
+                    "Введите персональный идентификационный номер, указанный на ID-карте. Если вы еще не получили "
+                    "ID-карту, нажмите кнопку «Я еще не получил ID-карту» ниже.")
                 image = InputFile('data/images/pinfl_ru.jpg')
                 image_url = "http://telegra.ph//file/e815e58a3c4c08948b617.jpg"
                 markup = id_card_ru_markup

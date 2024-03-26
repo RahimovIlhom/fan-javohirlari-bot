@@ -27,7 +27,8 @@ async def solution_test_uz(msg: types.Message, state: FSMContext):
         return
     await state.set_data({'language': 'uzbek'})
     if user[-1] is None:
-        result = "⚠️ Botdan foydalanish uchun ID-kartangizdagi Shaxsiy raqamingizni kiriting:"
+        result = ("⚠️ Botdan foydalanish uchun ID-kartangizdagi Shaxsiy raqamingizni kiriting. ID karta olmagan "
+                  "bo’lsangiz pastda “Hali ID karta olmaganman” tugmasini bosing.")
         image = InputFile('data/images/pinfl.jpg')
         image_url = "http://telegra.ph//file/97b3043fbcdc89ba48360.jpg"
         try:
@@ -134,8 +135,8 @@ async def solution_test_ru(msg: types.Message, state: FSMContext):
         return
     await state.set_data({'language': 'russian'})
     if user[-1] is None:
-        result = ("⚠️ Введите персональный идентификационный номер, указанный в вашем ID-карте, чтобы воспользоваться "
-                  "ботом:")
+        result = ("Введите персональный идентификационный номер, указанный на ID-карте. Если вы еще не получили "
+                  "ID-карту, нажмите кнопку «Я еще не получил ID-карту» ниже.")
         image = InputFile('data/images/pinfl_ru.jpg')
         image_url = "http://telegra.ph//file/e815e58a3c4c08948b617.jpg"
         try:
@@ -312,16 +313,20 @@ async def select_response(call: types.CallbackQuery, callback_data: dict, state:
             image_url = await photo_link(image_path)
             if os.path.exists(image_path):
                 os.remove(image_path)
-            info_uz = (f"✅ Olimpiada testi yakunlandi!\nHurmatli {user[3]}, siz test savollarining {db_responses.count('1')} "
-                       f"tasiga to’g’ri va {db_responses.count('0')} tasiga noto’g’ri javob berdingiz.")
-            info_ru = (f"✅ Олимпиадный тест завершен!\nУважаемый(ая) {user[3]}, Вы ответили на {db_responses.count('1')} "
-                       f"вопросов теста правильно, а на {db_responses.count('0')} — неправильно.")
+            info_uz = (
+                f"✅ Olimpiada testi yakunlandi!\nHurmatli {user[3]}, siz test savollarining {db_responses.count('1')} "
+                f"tasiga to’g’ri va {db_responses.count('0')} tasiga noto’g’ri javob berdingiz.")
+            info_ru = (
+                f"✅ Олимпиадный тест завершен!\nУважаемый(ая) {user[3]}, Вы ответили на {db_responses.count('1')} "
+                f"вопросов теста правильно, а на {db_responses.count('0')} — неправильно.")
             if data.get('language') == 'uzbek':
                 await call.message.answer(info_uz, reply_markup=menu_test_uz)
-                await call.message.answer("Sizni sertifikat bilan tabriklaymiz!", reply_markup=download_certificate_markup_uz)
+                await call.message.answer("Sizni sertifikat bilan tabriklaymiz!",
+                                          reply_markup=download_certificate_markup_uz)
             else:
                 await call.message.answer(info_ru, reply_markup=menu_test_ru)
-                await call.message.answer("Поздравляем вас с сертификатом!", reply_markup=download_certificate_markup_ru)
+                await call.message.answer("Поздравляем вас с сертификатом!",
+                                          reply_markup=download_certificate_markup_ru)
         else:
             image_url = None
             if data.get('language') == 'uzbek':

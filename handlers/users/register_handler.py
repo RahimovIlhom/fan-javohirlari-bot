@@ -73,7 +73,8 @@ async def send_phone(msg: types.Message, state: FSMContext):
             if await db.select_user_phone(msg.contact.phone_number):
                 await msg.reply(text="Ushbu raqam ro’yxatga olingan")
                 return
-        info = "ID-kartangizdagi Shaxsiy raqamingizni kiriting:"
+        info = ("ID-kartangizdagi Shaxsiy raqamingizni kiriting. ID karta olmagan bo’lsangiz pastda “Hali ID "
+                "karta olmaganman” tugmasini bosing.")
         image = InputFile('data/images/pinfl.jpg')
         image_url = "http://telegra.ph//file/97b3043fbcdc89ba48360.jpg"
         markup = id_card_uz_markup
@@ -82,7 +83,8 @@ async def send_phone(msg: types.Message, state: FSMContext):
             if await db.select_user_phone(msg.contact.phone_number):
                 await msg.reply(text="Этот номер зарегистрирован")
                 return
-        info = "Введите персональный идентификационный номер, указанный на ID-карте:"
+        info = ("Введите персональный идентификационный номер, указанный на ID-карте. Если вы еще не получили "
+                "ID-карту, нажмите кнопку «Я еще не получил ID-карту» ниже.")
         image = InputFile('data/images/pinfl_ru.jpg')
         image_url = "http://telegra.ph//file/e815e58a3c4c08948b617.jpg"
         markup = id_card_ru_markup

@@ -221,14 +221,17 @@ class Database:
     async def select_test_result_column_names(self, *args, **kwargs):
         conn = await self.connect
         cur = conn.cursor()
-        resp = cur.execute("select * from test_result")
+        resp = cur.execute("select id, tg_id, language, fullname, pinfl, phone_number, region, district, "
+                           "school_number, science, result_time from test_result")
         names = tuple(map(lambda x: x[0], resp.description))
         return names
 
     async def select_test_result(self, test_id):
         conn = await self.connect
         cur = conn.cursor()
-        resp = cur.execute(f"SELECT * FROM test_result WHERE test_id = ?", (test_id,))
+        resp = cur.execute(f"SELECT id, tg_id, language, fullname, pinfl, phone_number, region, district, "
+                           f"school_number, science, result_time, responses FROM test_result WHERE test_id = ?",
+                           (test_id,))
         return resp.fetchall()
 
     async def add_token(self, token):

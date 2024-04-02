@@ -1,4 +1,5 @@
 import datetime
+import os
 import time
 
 import pytz
@@ -11,7 +12,7 @@ from data.config import ADMINS, sciences_uz
 from filters import IsPrivate
 from keyboards.default import menu_markup, sciences_uz_markup, language_markup, skip_markup
 from keyboards.default import tests_markup, olympiad_tests_markup
-from keyboards.inline import create_all_tests_markup, test_callback_data, create_edit_test_markup, variants, \
+from keyboards.inline import create_all_tests_markup, test_callback_data, create_edit_test_markup, \
     create_questions_markup, create_edit_question_markup, question_callback_data
 from loader import dp, db, bot
 from states import AddQuestionTestStatesGroup, CreateTestStatesGroup
@@ -29,6 +30,8 @@ async def show_users_excel(msg: types.Message):
     await write_data_excel(columns, users)
     file = InputFile(path_or_bytesio="data/users/data.xlsx")
     await msg.answer_document(file, caption="Barcha o'quvchilar ro'yxati!")
+    if os.path.exists('data/users/data.xlsx'):
+        os.remove('data/users/data.xlsx')
 
 
 @dp.message_handler(IsPrivate(), text="✉️ Xabar yuborish", user_id=ADMINS)

@@ -56,32 +56,17 @@ async def back_base_menu(call: types.CallbackQuery, state: FSMContext):
 async def send_test_result_excel(call: types.CallbackQuery, state: FSMContext):
     test_id = call.data
     columns = list(await db.select_test_result_column_names())
-    # ['id', 'tg_id', 'language', 'fullname', 'phone_number', 'region', 'district', 'school_number',
-    # 'science', 'responses', 'result_time', 'test_id', 'pinfl', 'certificate_image']
-    result = await db.select_test_result(test_id)
-    columns.pop()
-    columns.pop()
-    columns.pop(-2)
-    columns.append('pinfl')
     test = await db.select_test_id(test_id)
-    for i in range(1, test[4]+1):
-        columns.append(f"{i}")
-    new_result = []
-    for user_result in result:
-        user_result = list(user_result)
-        pinfl = user_result.pop()
-        pinfl = pinfl if pinfl else '-'
-        user_result.pop()
-        responses = user_result.pop(-2)
-        user_result.append(pinfl)
-        for res in responses:
-            user_result.append(res)
-        new_result.append(user_result)
+    columns += [str(i) for i in range(1, test[4] + 1)]
+
+    result = await db.select_test_result(test_id)
+    new_result = [[*user_result[:-1], *user_result[-1]] for user_result in result]
+
     file_path = await write_data_excel(columns, new_result, file_path=test[2])
     file = InputFile(path_or_bytesio=file_path)
     if os.path.exists(file_path):
         os.remove(file_path)
-    await call.message.answer_document(file, caption="Barcha o'quvchilar ro'yxati!")
+    await call.message.answer_document(file, caption=f"{test[1]} fanidan {test[2]} sana bo'yicha natija!")
 
 
 @dp.message_handler(state=ResultTestStatesGroup.time, content_types=ContentType.ANY)

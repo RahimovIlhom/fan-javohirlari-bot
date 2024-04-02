@@ -5,7 +5,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.builtin import CommandStart
 from aiogram.types import ReplyKeyboardRemove, InputFile, ContentType
 
-from data.config import ADMINS, CHANNELS
+from data.config import ADMINS, CHANNELS, sciences_dict
 from filters import IsPrivate
 from keyboards.default import language_markup, menu_markup, menu_test_ru, menu_test_uz, id_card_ru_markup, \
     id_card_uz_markup
@@ -123,9 +123,9 @@ async def checker(call: types.CallbackQuery, state: FSMContext):
         if not status:
             channels.append(channel)
             if user[2] == 'uzbek':
-                result += f"ℹ️ <b>{channel.title}</b> kanaliga obuna bo'lmagansiz!\n\n"
+                result += f"ℹ️ <b>\"{channel.title}\"</b> kanaliga obuna bo'lishingiz lozim!\n\n"
             else:
-                result += f"ℹ️ Вы не подписаны на канал <b>{channel.title}</b>!\n\n"
+                result += f"ℹ️ Вам необходимо подписаться на канал <b>«{channel.title}»</b>!\n\n"
     await call.message.delete()
     info_uz = (
         "Arizangiz qabul qilinishi uchun, iltimos, \"Fan javohirlari\" telegram kanaliga a'zo bo'ling. U yerda "
@@ -164,9 +164,9 @@ async def checker(call: types.CallbackQuery, state: FSMContext):
 
 @dp.callback_query_handler(text="download_certificate")
 async def send_cer(call: types.CallbackQuery):
-    await call.message.delete()
     user = await db.select_user(call.from_user.id)
-    test_result = await db.select_result_test_user(call.from_user.id, user[8], True)
+    await call.message.delete()
+    test_result = await db.select_result_test_user(call.from_user.id, sciences_dict[user[8]], True)
     if test_result:
         if test_result[13]:
             await call.message.answer_photo(test_result[13])

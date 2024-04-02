@@ -363,6 +363,7 @@ async def handle_test_completion(call, state, test_id, user_resp, language, resp
         image_url = None
     await db.add_test_result(test_id, user_id, language, *user[3:8], data.get('science'),
                              db_responses, datetime.datetime.now(), user[-1], image_url)
+    await asyncio.sleep(2)
     await state.reset_data()
     await state.finish()
 

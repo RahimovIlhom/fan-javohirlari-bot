@@ -166,7 +166,10 @@ async def checker(call: types.CallbackQuery, state: FSMContext):
 async def send_cer(call: types.CallbackQuery):
     user = await db.select_user(call.from_user.id)
     await call.message.delete()
-    test_result = await db.select_result_test_user(call.from_user.id, sciences_dict[user[8]], True)
+    if user[2] == 'uzbek':
+        test_result = await db.select_result_test_user(call.from_user.id, user[8], True)
+    else:
+        test_result = await db.select_result_test_user(call.from_user.id, sciences_dict[user[8]], True)
     if test_result:
         if test_result[13]:
             await call.message.answer_photo(test_result[13])

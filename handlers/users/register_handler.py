@@ -383,7 +383,7 @@ async def send_science(msg: types.Message, state: FSMContext):
                 "ma'lumotlar, talabalar hayoti, hajviy postlar berib boriladi.")
         success = ("Tabriklaymiz, siz ro'yxatdan o'tdingiz. O'zingizni sinab ko'rish uchun test topshirmoqchi "
                    "bo'lsangiz, quyidagi \"Test topshirish\" tugmasini bosing.")
-        data_refresh = "♻️ Ma'lumotlarga qayta ishlanmoqda!"
+        data_refresh = "♻️ Ma'lumotlar qayta ishlanmoqda!"
         markup = menu_test_uz
     else:
         if msg.text == '⬅️ Назад':

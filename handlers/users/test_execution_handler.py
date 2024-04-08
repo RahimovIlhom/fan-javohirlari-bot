@@ -314,7 +314,7 @@ async def handle_callback_query(call: types.CallbackQuery, callback_data: dict, 
     else:
         caption = text_template.format(call.message.text, responses_uz[int(current_resp) - 1] if language == 'uzbek' else responses_ru[int(current_resp) - 1])
 
-    await call.message.edit_caption(caption, reply_markup=None) if image else await call.message.edit_text(caption, reply_markup=None)
+    await call.message.edit_caption(caption.replace('>', '&gt').replace('<', '&lt'), reply_markup=None) if image else await call.message.edit_text(caption.replace('>', '&gt').replace('<', '&lt'), reply_markup=None)
 
     if number >= count:
         await TestStatesGroup.next()
@@ -325,7 +325,7 @@ async def handle_callback_query(call: types.CallbackQuery, callback_data: dict, 
     await state.update_data({'question_number': number + 1, 'responses': responses + str(question[4]), 'image': bool(question[5])})
 
     test_info_template = "Вопрос {}.\n\n{}" if language != 'uzbek' else "{}-savol.\n\n{}"
-    test_info = test_info_template.format(number + 1, question[3 if language != 'uzbek' else 2])
+    test_info = test_info_template.format(number + 1, question[3 if language != 'uzbek' else 2].replace('>', '&gt').replace('<', '&lt'))
 
     if bool(question[5]):
         await call.message.answer_photo(question[5], caption=test_info, reply_markup=await make_keyboard_test_responses(language))

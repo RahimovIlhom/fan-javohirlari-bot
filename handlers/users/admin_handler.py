@@ -405,12 +405,12 @@ async def choice_set_question(call: types.CallbackQuery, state: FSMContext):
     if data.get('language') == 'uzbek':
         info = (f"{question[1]}-savol\n"
                 f"Uz:\n"
-                f"{question[2]}\n"
+                f"{question[2].replace('>', '&gt').replace('<', '&lt')}\n"
                 f"To'g'ri javob: {question[4]}")
     else:
         info = (f"{question[1]}-savol\n"
                 f"Ru:\n"
-                f"{question[3]}\n"
+                f"{question[3].replace('>', '&gt').replace('<', '&lt')}\n"
                 f"To'g'ri javob: {question[4]}")
     if question[5]:
         await call.message.delete()

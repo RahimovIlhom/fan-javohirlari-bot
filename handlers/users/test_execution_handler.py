@@ -262,10 +262,10 @@ async def start_test(call: types.CallbackQuery, state: FSMContext):
         {'question_number': question_num, 'responses': f'{question[4]}', 'start_time': datetime.datetime.now()})
     if data.get('language') == 'uzbek':
         test_info = (f"1-savol.\n\n"
-                     f"{question[2]}")
+                     f"{question[2].replace('>', '&gt').replace('<', '&lt')}")
     else:
         test_info = (f"Вопрос 1.\n\n"
-                     f"{question[3]}")
+                     f"{question[3].replace('>', '&gt').replace('<', '&lt')}")
     if question[5]:
         await state.update_data({'image': True})
         await call.message.delete()

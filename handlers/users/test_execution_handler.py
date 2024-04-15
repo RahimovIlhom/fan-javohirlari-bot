@@ -39,6 +39,7 @@ async def solution_test_uz(msg: types.Message, state: FSMContext):
             await msg.answer_photo(image, caption=result, reply_markup=id_card_uz_markup)
         await PINFLStateGroup.pinfl.set()
         return
+    # return
     info = f"Qaysi fandan test topshirmoqchisiz?"
     await msg.answer(info, reply_markup=sciences_uz_markup)
     await state.set_state(TestStatesGroup.science)
@@ -174,6 +175,7 @@ async def solution_test_ru(msg: types.Message, state: FSMContext):
             await msg.answer_photo(image, caption=result, reply_markup=id_card_ru_markup)
         await PINFLStateGroup.pinfl.set()
         return
+    # return
     info = f"Из какого предмета вы хотите сдать тест?"
     await msg.answer(info, reply_markup=sciences_ru_markup)
     await state.set_state(TestStatesGroup.science)
@@ -347,8 +349,8 @@ async def handle_test_completion(call, state, test_id, user_resp, language, resp
         text4 = "✅ Olimpiada testi yakunlandi!\n\nHurmatli {}, siz test savollarining {} tasiga to'g'ri va {} tasiga noto'g'ri javob berdingiz.\n\nAfsuski, siz olimpiadaning 2-bosqichida ishtirok etish uchun yetarlicha ball to'play olmadingiz. \n\nAmmo hech tushkunlikka tushmang. Yaqin kunlarda universitetimizda 2024/2025 o'quv yili uchun qabul boshlanadi va siz hujjatlaringizni hamda imtihonni onlayn topshirib, o'z kuchingizni yana sinab ko'rishingiz mumkin bo'ladi.\n\nFan va texnologiyalar universitetining yangiliklaridan xabardor bo'lib turish uchun @usatuzb telegram kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun 78-888-38-88 telefon raqamiga qo'ng'iroq qiling.\n\nSiz bilan universitetimizning talabasi sifatida uchrashishimizni sabrsizlik bilan kutib qolamiz! 🤗"
 
         result = db_responses.count('1') / len(db_responses)
-        image_index = (2 if result >= 0.85 else 1 if result >= 0.7 else 0) if result > 0.3 else 3
-        info_template = (text1 if result >= 0.85 else text2 if result >= 0.7 else text3) if result > 0.3 else text4
+        image_index = (2 if result >= 0.85 else 1 if result >= 0.65 else 0) if result > 0.33 else 3
+        info_template = (text1 if result >= 0.85 else text2 if result >= 0.65 else text3) if result > 0.33 else text4
 
         info = info_template.format(user_name, db_responses.count('1'), db_responses.count('0'))
         await call.message.answer(info, reply_markup=menu_test_uz if language == 'uzbek' else menu_test_ru)

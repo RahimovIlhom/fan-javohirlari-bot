@@ -1,11 +1,13 @@
+import datetime
 import json
 import time
 
+import pytz
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.types import ContentType, ReplyKeyboardRemove, InputFile
 
-from data.config import regions_uz, regions_ru, sciences_uz, sciences_ru, CHANNELS
+from data.config import regions_uz, regions_ru, sciences_uz, sciences_ru, CHANNELS, sciences_dict
 from keyboards.default import phone_ru_markup, phone_uz_markup, language_markup, region_uz_markup, region_ru_markup, \
     district_uz_markup, district_ru_markup, back_uz_button, back_ru_button, sciences_uz_markup, sciences_ru_markup, \
     make_lessons_uz_markup, make_lessons_ru_markup, menu_test_uz, menu_test_ru, id_card_uz_markup, id_card_ru_markup
@@ -377,6 +379,16 @@ async def send_science(msg: types.Message, state: FSMContext):
         if msg.text not in sciences_uz:
             await msg.answer("‼️ Iltimos, quyidagi tugmalardan foydalaning!", reply_markup=sciences_uz_markup)
             return
+        olympiad_test = await db.select_test(msg.text, data.get('language'), True)
+        if olympiad_test:
+            tashkent_timezone = pytz.timezone('Asia/Tashkent')
+            stop_localized_datetime = tashkent_timezone.localize(
+                datetime.datetime.strptime(olympiad_test[6][:10], '%Y-%m-%d'))
+            now_localized_datetime = tashkent_timezone.localize(datetime.datetime.now())
+            if now_localized_datetime > stop_localized_datetime:
+                await msg.answer(f"{msg.text} fanidan 1-bosqich olimpiada yakunlandi!\n"
+                                 f"Boshqa fanni tanlashingiz mumkin:", reply_markup=sciences_uz_markup)
+                return
         info = ("Arizangiz qabul qilinishi uchun, iltimos, \"Fan javohirlari\" telegram kanaliga a'zo bo'ling. U yerda "
                 "loyiha haqida ma'lumotlar, fanlar bo'yicha testlar va ularning javoblari, olimpiada o'tkazilish "
                 "kunlari e'lon qilinib boriladi. Shu bilan birga, kanalda abituriyentlar uchun qiziq bo'lgan "
@@ -396,6 +408,16 @@ async def send_science(msg: types.Message, state: FSMContext):
         if msg.text not in sciences_ru:
             await msg.answer("‼️ Пожалуйста, используйте кнопки ниже!", reply_markup=sciences_ru_markup)
             return
+        olympiad_test = await db.select_test(sciences_dict[msg.text], data.get('language'), True)
+        if olympiad_test:
+            tashkent_timezone = pytz.timezone('Asia/Tashkent')
+            stop_localized_datetime = tashkent_timezone.localize(
+                datetime.datetime.strptime(olympiad_test[6][:10], '%Y-%m-%d'))
+            now_localized_datetime = tashkent_timezone.localize(datetime.datetime.now())
+            if now_localized_datetime > stop_localized_datetime:
+                await msg.answer(f"Завершился 1-й этап олимпиады по {msg.text}!\n"
+                                 f"Выберите другую предмет:", reply_markup=sciences_ru_markup)
+                return
         info = ("Для того, чтобы вашу заявку приняли, пожалуйста, подпишитесь на Telegram-канал «Fan javohirlari». Там "
                 "публикуется информация о проекте, тесты по разным предметам и   ответы на них, а также даты "
                 "проведения олимпиады. Также на канале публикуется   интересная информация для абитуриентов, "

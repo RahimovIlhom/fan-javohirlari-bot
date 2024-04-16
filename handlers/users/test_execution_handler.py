@@ -39,7 +39,8 @@ async def solution_test_uz(msg: types.Message, state: FSMContext):
             await msg.answer_photo(image, caption=result, reply_markup=id_card_uz_markup)
         await PINFLStateGroup.pinfl.set()
         return
-    # return
+    await msg.reply("Olimpiada vaqtida test topshira olmaysiz!")
+    return
     info = f"Qaysi fandan test topshirmoqchisiz?"
     await msg.answer(info, reply_markup=sciences_uz_markup)
     await state.set_state(TestStatesGroup.science)
@@ -175,7 +176,8 @@ async def solution_test_ru(msg: types.Message, state: FSMContext):
             await msg.answer_photo(image, caption=result, reply_markup=id_card_ru_markup)
         await PINFLStateGroup.pinfl.set()
         return
-    # return
+    await msg.reply("Во время Олимпиады тест сдавать нельзя!")
+    return
     info = f"Из какого предмета вы хотите сдать тест?"
     await msg.answer(info, reply_markup=sciences_ru_markup)
     await state.set_state(TestStatesGroup.science)
@@ -359,7 +361,8 @@ async def handle_test_completion(call, state, test_id, user_resp, language, resp
         await call.message.answer_photo(InputFile(image_path), caption="Sizni sertifikat bilan tabriklaymiz!")
         image_url = await photo_link(image_path)
         os.remove(image_path) if os.path.exists(image_path) else None
-        await post_or_put_result(user[0], user_id, result, image_url)
+        resp = await post_or_put_result(user[0], user_id, result, image_url)
+        print(resp)
     else:
         info_template = "✅ Test yakunlandi!\nHurmatli {}, siz test savollarining {} tasiga to’g’ri va {} tasiga noto’g’ri javob berdingiz." if language == 'uzbek' else "✅ Тест завершен!\nУважаемый(ая) {}, Вы ответили на {} вопросов теста правильно, а на {} — неправильно."
         info = info_template.format(user_name, db_responses.count('1'), db_responses.count('0'))

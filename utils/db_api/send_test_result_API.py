@@ -20,11 +20,14 @@ async def post_or_put_result(id, tg_id, result, certificateImage, *args, **kwarg
     else:
         BEARER_TOKEN = BEARER_TOKEN[3]
 
+    vaucher = (2000000 if result >= 0.85 else 1500000 if result >= 0.65 else 1000000) if result > 0.33 else 0
+
     data = {
         "id": id,
         "telegrammId": tg_id,
         "result": result,
-        "certificateImage": certificateImage
+        "certificateImage": certificateImage,
+        "vaucher": vaucher
     }
 
     headers = {

@@ -382,8 +382,7 @@ async def send_science(msg: types.Message, state: FSMContext):
         olympiad_test = await db.select_test(msg.text, data.get('language'), True)
         if olympiad_test:
             tashkent_timezone = pytz.timezone('Asia/Tashkent')
-            stop_localized_datetime = tashkent_timezone.localize(
-                datetime.datetime.strptime(olympiad_test[6][:10], '%Y-%m-%d'))
+            stop_localized_datetime = olympiad_test[6]
             now_localized_datetime = tashkent_timezone.localize(datetime.datetime.now())
             if now_localized_datetime > stop_localized_datetime:
                 await msg.answer(f"{msg.text} fanidan 1-bosqich olimpiada yakunlandi!\n"
@@ -411,8 +410,7 @@ async def send_science(msg: types.Message, state: FSMContext):
         olympiad_test = await db.select_test(sciences_dict[msg.text], data.get('language'), True)
         if olympiad_test:
             tashkent_timezone = pytz.timezone('Asia/Tashkent')
-            stop_localized_datetime = tashkent_timezone.localize(
-                datetime.datetime.strptime(olympiad_test[6][:10], '%Y-%m-%d'))
+            stop_localized_datetime = olympiad_test[6]
             now_localized_datetime = tashkent_timezone.localize(datetime.datetime.now())
             if now_localized_datetime > stop_localized_datetime:
                 await msg.answer(f"Завершился 1-й этап олимпиады по {msg.text}!\n"

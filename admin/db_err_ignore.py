@@ -19,4 +19,5 @@ def delete_test_result():
     print("Error ignore")
 
 
-delete_test_result()
+if __name__ == '__main__':
+    delete_test_result()

@@ -282,8 +282,8 @@ async def edit_test(call: types.CallbackQuery, callback_data: dict, state: FSMCo
     await state.update_data({'tests_count': len(all_tests), 'quantity': test_info[4]})
     if olympiad_test:
         tashkent_timezone = pytz.timezone('Asia/Tashkent')
-        start_localized_datetime = tashkent_timezone.localize(datetime.datetime.strptime(test_info[8][:10], '%Y-%m-%d'))
-        stop_localized_datetime = tashkent_timezone.localize(datetime.datetime.strptime(test_info[6][:10], '%Y-%m-%d'))
+        start_localized_datetime = test_info[8]
+        stop_localized_datetime = test_info[8]
         now_localized_datetime = tashkent_timezone.localize(datetime.datetime.now())
         if now_localized_datetime < start_localized_datetime:
             status = "⏸ Boshlanmagan!"
@@ -291,7 +291,7 @@ async def edit_test(call: types.CallbackQuery, callback_data: dict, state: FSMCo
             status = "▶️ Davom etmoqda!"
         else:
             status = "⏹ Tugagan!"
-        info = f"{test_info[1]} fani '{test_info[6][:10]} - {test_info[3][:2]}' <b>olimpiada</b> testi uchun amalni tanlang:\n"
+        info = f"{test_info[1]} fani '{test_info[6].date()} - {test_info[3][:2]}' <b>olimpiada</b> testi uchun amalni tanlang:\n"
         info += f"Holat: {status}\n"
     else:
         info = f"{test_info[1]} fani {test_info[2]} - {test_info[3][:2]} testi uchun amalni tanlang:\n"
@@ -378,8 +378,8 @@ async def choice_set_question(call: types.CallbackQuery, state: FSMContext):
     await state.update_data({'tests_count': len(all_tests), 'quantity': test_info[4]})
     if data.get('olympiad'):
         tashkent_timezone = pytz.timezone('Asia/Tashkent')
-        start_localized_datetime = tashkent_timezone.localize(datetime.datetime.strptime(test_info[8][:10], '%Y-%m-%d'))
-        stop_localized_datetime = tashkent_timezone.localize(datetime.datetime.strptime(test_info[6][:10], '%Y-%m-%d'))
+        start_localized_datetime = test_info[8]
+        stop_localized_datetime = test_info[6]
         now_localized_datetime = tashkent_timezone.localize(datetime.datetime.now())
         if now_localized_datetime < start_localized_datetime:
             status = "⏸ Boshlanmagan!"
@@ -387,7 +387,7 @@ async def choice_set_question(call: types.CallbackQuery, state: FSMContext):
             status = "▶️ Davom etmoqda!"
         else:
             status = "⏹ Tugagan!"
-        info = f"{test_info[1]} fani '{test_info[6][:10]} - {test_info[3][:2]}' <b>olimpiada</b> testi uchun amalni tanlang:\n"
+        info = f"{test_info[1]} fani '{test_info[6].date()} - {test_info[3][:2]}' <b>olimpiada</b> testi uchun amalni tanlang:\n"
         info += f"Holat: {status}\n"
     else:
         info = f"{test_info[1]} fani {test_info[2]} - {test_info[3][:2]} testi uchun amalni tanlang:\n"
@@ -452,8 +452,8 @@ async def send_question_uz(msg: types.Message, state: FSMContext):
                              'quantity': test_info[4], 'language': language})
     if data.get('olympiad'):
         tashkent_timezone = pytz.timezone('Asia/Tashkent')
-        start_localized_datetime = tashkent_timezone.localize(datetime.datetime.strptime(test_info[8][:10], '%Y-%m-%d'))
-        stop_localized_datetime = tashkent_timezone.localize(datetime.datetime.strptime(test_info[6][:10], '%Y-%m-%d'))
+        start_localized_datetime = test_info[8]
+        stop_localized_datetime = test_info[6]
         now_localized_datetime = tashkent_timezone.localize(datetime.datetime.now())
         if now_localized_datetime < start_localized_datetime:
             status = "⏸ Boshlanmagan!"
@@ -461,7 +461,7 @@ async def send_question_uz(msg: types.Message, state: FSMContext):
             status = "▶️ Davom etmoqda!"
         else:
             status = "⏹ Tugagan!"
-        info = f"{test_info[1]} fani '{test_info[6][:10]} - {test_info[3][:2]}' <b>olimpiada</b> testi uchun amalni tanlang:\n"
+        info = f"{test_info[1]} fani '{test_info[6].date()} - {test_info[3][:2]}' <b>olimpiada</b> testi uchun amalni tanlang:\n"
         info += f"Holat: {status}\n"
     else:
         info = f"{test_info[1]} fani {test_info[2]} - {test_info[3][:2]} testi uchun amalni tanlang:\n"

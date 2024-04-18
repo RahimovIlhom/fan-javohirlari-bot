@@ -68,16 +68,16 @@ async def solution_test_uz(msg: types.Message, state: FSMContext):
         return
 
     tashkent_timezone = pytz.timezone('Asia/Tashkent')
-    start_localized_datetime = tashkent_timezone.localize(datetime.datetime.strptime(test_app[8][:10], '%Y-%m-%d'))
-    stop_localized_datetime = tashkent_timezone.localize(datetime.datetime.strptime(test_app[6][:10], '%Y-%m-%d'))
+    start_localized_datetime = test_app[8]
+    stop_localized_datetime = test_app[6]
     now_localized_datetime = tashkent_timezone.localize(datetime.datetime.now())
 
     if now_localized_datetime < start_localized_datetime:
-        await msg.answer(f"{user[8]} fanidan olimpiada test sinovlari {test_app[8][:10]} soat 00:00da boshlanadi!")
+        await msg.answer(f"{user[8]} fanidan olimpiada test sinovlari {test_app[8].date()} soat 00:00da boshlanadi!")
     elif now_localized_datetime < stop_localized_datetime:
         await start_olympiad_test_uz(msg, state, test_app, user[8])
     else:
-        await msg.answer(f"{user[8]} fanidan olimpiada test sinovlari {test_app[6][:10]} soat 00:00da yakunlangan!")
+        await msg.answer(f"{user[8]} fanidan olimpiada test sinovlari {test_app[6].date()} soat 00:00da yakunlangan!")
 
 
 async def start_olympiad_test_uz(msg: types.Message, state: FSMContext, test_app, subject):
@@ -123,16 +123,16 @@ async def solution_test_uz(msg: types.Message, state: FSMContext):
         return
 
     tashkent_timezone = pytz.timezone('Asia/Tashkent')
-    start_localized_datetime = tashkent_timezone.localize(datetime.datetime.strptime(test_app[8][:10], '%Y-%m-%d'))
-    stop_localized_datetime = tashkent_timezone.localize(datetime.datetime.strptime(test_app[6][:10], '%Y-%m-%d'))
+    start_localized_datetime = test_app[8].date()
+    stop_localized_datetime = test_app[6].date()
     now_localized_datetime = tashkent_timezone.localize(datetime.datetime.now())
 
     if now_localized_datetime < start_localized_datetime:
-        await msg.answer(f"Олимпиадное тестирование по {user[8]} начнется {test_app[8][:10]} в 00:00!")
+        await msg.answer(f"Олимпиадное тестирование по {user[8]} начнется {test_app[8].date()} в 00:00!")
     elif now_localized_datetime < stop_localized_datetime:
         await start_olympiad_test(msg, state, test_app, user[8])
     else:
-        await msg.answer(f"Тест по {user[8]} для олимпиады завершён {test_app[6][:10]} в 00:00!")
+        await msg.answer(f"Тест по {user[8]} для олимпиады завершён {test_app[6].date()} в 00:00!")
 
 
 async def start_olympiad_test(msg: types.Message, state: FSMContext, test_app, subject):
@@ -345,24 +345,23 @@ async def handle_test_completion(call, state, test_id, user_resp, language, resp
     db_responses = ''.join(['1' if x == y else '0' for x, y in zip(responses, user_resp)])
 
     if data.get('olympiad_test'):
-        text1 = "✅ Olimpiada testi yakunlandi!\n\nHurmatli {}, siz test savollarining {} tasiga to'g'ri va {} tasiga noto'g'ri javob berdingiz.\n\nTabriklaymiz, siz olimpiadaning 2-bosqichiga o'tdingiz. 2-bosqich may oyida Fan va texnologiyalar universitetining binosida bo'lib o'tadi.\n\nShu bilan birga, siz 2 million so'mlik vaucherni ham qo'lga kiritdingiz. Ushbu vaucherni Fan va texnologiyalar universitetida kunduzgi ta'lim shaklidagi shartnoma to'lovi uchun bir martalik chegirma sifatida ishlatishingiz mumkin.\n\nFan va texnologiyalar universitetining yangiliklaridan xabardor bo'lib turish uchun @usatuzb telegram kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun 78-888-38-88 telefon raqamiga qo'ng'iroq qiling.\n\nBizni sizni kutamiz!"
-        text2 = "✅ Olimpiada testi yakunlandi!\n\nHurmatli {}, siz test savollarining {} tasiga to'g'ri va {} tasiga noto'g'ri javob berdingiz.\n\nTabriklaymiz, siz olimpiadaning 2-bosqichiga o'tdingiz. 2-bosqich may oyida Fan va texnologiyalar universitetining binosida bo'lib o'tadi. \n\nShu bilan birga, siz 1,5 million so'mlik vaucherni ham qo'lga kiritdingiz. Ushbu vaucherni Fan va texnologiyalar universitetida kunduzgi ta'lim shaklidagi shartnoma to'lovi uchun bir martalik chegirma sifatida ishlatishingiz mumkin.\n\nFan va texnologiyalar universitetining yangiliklaridan xabardor bo'lib turish uchun @usatuzb telegram kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun 78-888-38-88 telefon raqamiga qo'ng'iroq qiling.\n\nBizni sizni kutamiz!"
-        text3 = "✅ Olimpiada testi yakunlandi!\n\nHurmatli {}, siz test savollarining {} tasiga to'g'ri va {} tasiga noto'g'ri javob berdingiz.\n\nTabriklaymiz, siz olimpiadada muvaffaqiyatli ishtirok etdingiz, ammo 2-bosqichda ishtirok etish uchun yetarlicha ball to'play olmadingiz. \n\nShunga qaramay, universitetimizda ta'lim olish istagini bildirganingiz va faolligingiz uchun sizga qiymati 1 million so'mlik vaucherni taqdim etamiz. Ushbu vaucherni Fan va texnologiyalar universitetida kunduzgi ta'lim shaklidagi shartnoma to'lovi uchun bir martalik chegirma sifatida ishlatishingiz mumkin.\n\nYaqin kunlarda universitetimizda 2024/2025 o'quv yili uchun qabul boshlanadi va siz hujjatlaringizni hamda imtihonni onlayn topshirib, o'z kuchingizni yana sinab ko'rishingiz mumkin bo'ladi.\n\nFan va texnologiyalar universitetining yangiliklaridan xabardor bo'lib turish uchun @usatuzb telegram kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun 78-888-38-88 telefon raqamiga qo'ng'iroq qiling.\n\nSiz bilan universitetimizning talabasi sifatida uchrashishimizni sabrsizlik bilan kutib qolamiz! 🤗"
-        text4 = "✅ Olimpiada testi yakunlandi!\n\nHurmatli {}, siz test savollarining {} tasiga to'g'ri va {} tasiga noto'g'ri javob berdingiz.\n\nAfsuski, siz olimpiadaning 2-bosqichida ishtirok etish uchun yetarlicha ball to'play olmadingiz. \n\nAmmo hech tushkunlikka tushmang. Yaqin kunlarda universitetimizda 2024/2025 o'quv yili uchun qabul boshlanadi va siz hujjatlaringizni hamda imtihonni onlayn topshirib, o'z kuchingizni yana sinab ko'rishingiz mumkin bo'ladi.\n\nFan va texnologiyalar universitetining yangiliklaridan xabardor bo'lib turish uchun @usatuzb telegram kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun 78-888-38-88 telefon raqamiga qo'ng'iroq qiling.\n\nSiz bilan universitetimizning talabasi sifatida uchrashishimizni sabrsizlik bilan kutib qolamiz! 🤗"
+        text1 = "✅ Olimpiada testi yakunlandi!\n\nHurmatli {}, siz test savollarining {} tasiga to'g'ri javob berdingiz.\n\nTabriklaymiz, siz olimpiadaning 2-bosqichiga o'tdingiz. 2-bosqich may oyida Fan va texnologiyalar universitetining binosida bo'lib o'tadi.\n\nShu bilan birga, siz 2 million so'mlik vaucherni ham qo'lga kiritdingiz. Ushbu vaucherni Fan va texnologiyalar universitetida kunduzgi ta'lim shaklidagi shartnoma to'lovi uchun bir martalik chegirma sifatida ishlatishingiz mumkin.\n\nFan va texnologiyalar universitetining yangiliklaridan xabardor bo'lib turish uchun @usatuzb telegram kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun 78-888-38-88 telefon raqamiga qo'ng'iroq qiling.\n\nBizni sizni kutamiz!"
+        text2 = "✅ Olimpiada testi yakunlandi!\n\nHurmatli {}, siz test savollarining {} tasiga to'g'ri javob berdingiz.\n\nTabriklaymiz, siz olimpiadaning 2-bosqichiga o'tdingiz. 2-bosqich may oyida Fan va texnologiyalar universitetining binosida bo'lib o'tadi. \n\nShu bilan birga, siz 1,5 million so'mlik vaucherni ham qo'lga kiritdingiz. Ushbu vaucherni Fan va texnologiyalar universitetida kunduzgi ta'lim shaklidagi shartnoma to'lovi uchun bir martalik chegirma sifatida ishlatishingiz mumkin.\n\nFan va texnologiyalar universitetining yangiliklaridan xabardor bo'lib turish uchun @usatuzb telegram kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun 78-888-38-88 telefon raqamiga qo'ng'iroq qiling.\n\nBizni sizni kutamiz!"
+        text3 = "✅ Olimpiada testi yakunlandi!\n\nHurmatli {}, siz test savollarining {} tasiga to'g'ri javob berdingiz.\n\nTabriklaymiz, siz olimpiadada muvaffaqiyatli ishtirok etdingiz, ammo 2-bosqichda ishtirok etish uchun yetarlicha ball to'play olmadingiz. \n\nShunga qaramay, universitetimizda ta'lim olish istagini bildirganingiz va faolligingiz uchun sizga qiymati 1 million so'mlik vaucherni taqdim etamiz. Ushbu vaucherni Fan va texnologiyalar universitetida kunduzgi ta'lim shaklidagi shartnoma to'lovi uchun bir martalik chegirma sifatida ishlatishingiz mumkin.\n\nYaqin kunlarda universitetimizda 2024/2025 o'quv yili uchun qabul boshlanadi va siz hujjatlaringizni hamda imtihonni onlayn topshirib, o'z kuchingizni yana sinab ko'rishingiz mumkin bo'ladi.\n\nFan va texnologiyalar universitetining yangiliklaridan xabardor bo'lib turish uchun @usatuzb telegram kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun 78-888-38-88 telefon raqamiga qo'ng'iroq qiling.\n\nSiz bilan universitetimizning talabasi sifatida uchrashishimizni sabrsizlik bilan kutib qolamiz! 🤗"
+        text4 = "✅ Olimpiada testi yakunlandi!\n\nHurmatli {}, siz test savollarining {} tasiga to'g'ri javob berdingiz.\n\nAfsuski, siz olimpiadaning 2-bosqichida ishtirok etish uchun yetarlicha ball to'play olmadingiz. \n\nAmmo hech tushkunlikka tushmang. Yaqin kunlarda universitetimizda 2024/2025 o'quv yili uchun qabul boshlanadi va siz hujjatlaringizni hamda imtihonni onlayn topshirib, o'z kuchingizni yana sinab ko'rishingiz mumkin bo'ladi.\n\nFan va texnologiyalar universitetining yangiliklaridan xabardor bo'lib turish uchun @usatuzb telegram kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun 78-888-38-88 telefon raqamiga qo'ng'iroq qiling.\n\nSiz bilan universitetimizning talabasi sifatida uchrashishimizni sabrsizlik bilan kutib qolamiz! 🤗"
 
         result = db_responses.count('1') / len(db_responses)
         image_index = (2 if result >= 0.85 else 1 if result >= 0.65 else 0) if result > 0.33 else 3
         info_template = (text1 if result >= 0.85 else text2 if result >= 0.65 else text3) if result > 0.33 else text4
 
-        info = info_template.format(user_name, db_responses.count('1'), db_responses.count('0'))
+        info = info_template.format(user_name, db_responses.count('1'))
         await call.message.answer(info, reply_markup=menu_test_uz if language == 'uzbek' else menu_test_ru)
 
         image_path = await create_certificate(user_id=user_id, fullname=user[3], image_index=image_index, science=user[8], language=language)
         await call.message.answer_photo(InputFile(image_path), caption="Sizni sertifikat bilan tabriklaymiz!")
         image_url = await photo_link(image_path)
         os.remove(image_path) if os.path.exists(image_path) else None
-        resp = await post_or_put_result(user[0], user_id, result, image_url)
-        print(resp)
+        await post_or_put_result(user[0], user_id, result, image_url)
     else:
         info_template = "✅ Test yakunlandi!\nHurmatli {}, siz test savollarining {} tasiga to’g’ri va {} tasiga noto’g’ri javob berdingiz." if language == 'uzbek' else "✅ Тест завершен!\nУважаемый(ая) {}, Вы ответили на {} вопросов теста правильно, а на {} — неправильно."
         info = info_template.format(user_name, db_responses.count('1'), db_responses.count('0'))

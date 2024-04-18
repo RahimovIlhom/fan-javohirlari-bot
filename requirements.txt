@@ -1,3 +1,4 @@
+aiofiles==23.2.1
 aiogram==2.25.1
 aiogram-datepicker==0.0.8
 aiohttp==3.8.1
@@ -17,6 +18,7 @@ marshmallow==3.21.1
 multidict==6.0.5
 packaging==24.0
 pillow==10.2.0
+psycopg2-binary==2.9.9
 python-dotenv==1.0.1
 pytz==2024.1
 requests==2.31.0

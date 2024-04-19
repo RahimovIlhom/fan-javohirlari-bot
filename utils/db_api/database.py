@@ -1,7 +1,6 @@
 import datetime
-import sqlite3
+import mysql.connector
 
-import psycopg2
 from environs import Env
 
 from utils.db_api import post_or_put_data
@@ -13,12 +12,14 @@ env.read_env()
 class Database:
     @property
     async def connect(self):
-        conn = psycopg2.connect(database=env.str("DB_NAME"),
-                                host=env.str("DB_HOST"),
-                                user=env.str("DB_USER"),
-                                password=env.str("DB_PASSWORD"),
-                                port=env.str("DB_PORT"))
-        return conn
+        mydb = mysql.connector.connect(
+            host=env.str("DB_HOST"),
+            user=env.str("DB_USER"),
+            password=env.str("DB_PASSWORD"),
+            database=env.str("DB_NAME"),
+        )
+
+        return mydb
 
     async def select_users(self, *args, **kwargs):
         conn = await self.connect

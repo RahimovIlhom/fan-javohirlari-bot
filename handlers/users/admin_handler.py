@@ -283,8 +283,13 @@ async def edit_test(call: types.CallbackQuery, callback_data: dict, state: FSMCo
     if olympiad_test:
         tashkent_timezone = pytz.timezone('Asia/Tashkent')
         start_localized_datetime = test_info[8]
+        print(start_localized_datetime)
+        print(type(start_localized_datetime))
         stop_localized_datetime = test_info[8]
-        now_localized_datetime = tashkent_timezone.localize(datetime.datetime.now())
+        # now_localized_datetime = tashkent_timezone.localize(datetime.datetime.now())
+        now_localized_datetime = datetime.datetime.now()
+        print(now_localized_datetime)
+        print(type(now_localized_datetime))
         if now_localized_datetime < start_localized_datetime:
             status = "⏸ Boshlanmagan!"
         elif now_localized_datetime < stop_localized_datetime:

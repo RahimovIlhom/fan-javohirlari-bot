@@ -8,6 +8,7 @@ async-timeout==4.0.3
 attrs==23.2.0
 Babel==2.9.1
 certifi==2024.2.2
+charset-normalizer==3.3.2
 Django==4.1
 environs==9.5.0
 frozenlist==1.4.1
@@ -15,6 +16,8 @@ idna==3.6
 magic-filter==1.0.12
 marshmallow==3.21.1
 multidict==6.0.5
+mysql-connector-python==8.3.0
+mysqlclient==2.2.4
 packaging==24.0
 pillow==10.2.0
 psycopg2-binary==2.8.6

@@ -7,6 +7,8 @@ class AddQuestionTestStatesGroup(StatesGroup):
     update = State()
     image = State()
     question = State()
+    start_date = State()
+    end_date = State()
 
 
 class CreateTestStatesGroup(StatesGroup):

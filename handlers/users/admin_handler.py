@@ -222,7 +222,8 @@ async def choice_science_admin(msg: types.Message, state: FSMContext):
         await msg.answer("Iltimos, tugmalardan foydalaning!")
         return
     if await db.select_science_tests(msg.text, olympiad_test) is False:
-        await msg.answer(f"Hozirda {msg.text} fanidan {'<b>olimpiada</b> ' if olympiad_test else ''}testlar mavjud emas!")
+        await msg.answer(
+            f"Hozirda {msg.text} fanidan {'<b>olimpiada</b> ' if olympiad_test else ''}testlar mavjud emas!")
         return
     await msg.answer("Ajoyib, testni tanlab unga savol qo'shishingiz, tahrirlashingiz yoki o'chirishingiz "
                      "mumkin.", reply_markup=ReplyKeyboardRemove())
@@ -262,9 +263,10 @@ async def edit_test(call: types.CallbackQuery, callback_data: dict, state: FSMCo
                                       reply_markup=sciences_uz_markup)
             await AddQuestionTestStatesGroup.previous()
             return
-        await call.message.edit_text(f"{data.get('science')} fani tanlangan {'<b>olimpiada</b> ' if data.get('olympiad') else ''}testi o'chirildi!\n"
-                                     f"Shu fan bo'yicha boshqa testlar:",
-                                     reply_markup=await create_all_tests_markup(data.get('science'), olympiad_test))
+        await call.message.edit_text(
+            f"{data.get('science')} fani tanlangan {'<b>olimpiada</b> ' if data.get('olympiad') else ''}testi o'chirildi!\n"
+            f"Shu fan bo'yicha boshqa testlar:",
+            reply_markup=await create_all_tests_markup(data.get('science'), olympiad_test))
         return
     elif action == "add":
         await add_question_image(call, test_id, state)
@@ -274,11 +276,15 @@ async def edit_test(call: types.CallbackQuery, callback_data: dict, state: FSMCo
         await edit_question(call, test_id, state)
         await AddQuestionTestStatesGroup.next()
         return
+    elif action == 'edit_date':
+        await edit_start_date(call, test_id, state)
+        await AddQuestionTestStatesGroup.start_date.set()
+        return
     all_tests = await db.select_questions_test_id(test_id)
     await state.update_data({'tests_count': len(all_tests), 'quantity': test_info[4]})
     if olympiad_test:
         start_localized_datetime = test_info[8]
-        stop_localized_datetime = test_info[8]
+        stop_localized_datetime = test_info[6]
         now_localized_datetime = datetime.datetime.now()
         if now_localized_datetime < start_localized_datetime:
             status = "⏸ Boshlanmagan!"
@@ -291,7 +297,7 @@ async def edit_test(call: types.CallbackQuery, callback_data: dict, state: FSMCo
     else:
         info = f"{test_info[1]} fani {test_info[2]} - {test_info[3][:2]} testi uchun amalni tanlang:\n"
     info += f"Testlar soni: {len(all_tests)}/{test_info[4]} {'✅' if len(all_tests) >= test_info[4] else ''}"
-    await call.message.edit_text(info, reply_markup=await create_edit_test_markup(test_id))
+    await call.message.edit_text(info, reply_markup=await create_edit_test_markup(test_id, olympiad_test))
 
 
 async def add_question_image(call, test_id, state, *args, **kwargs):
@@ -300,8 +306,80 @@ async def add_question_image(call, test_id, state, *args, **kwargs):
     number = len(all_questions) + 1
     await state.update_data({'test_id': test_id, 'number_question': number})
     await call.message.delete()
-    await call.message.answer(f"{data.get('science')} fani {'<b>olimpiada</b> ' if data.get('olympiad') else ''}testi uchun {number}-savolni rasmini yuboring!",
-                              reply_markup=skip_markup)
+    await call.message.answer(
+        f"{data.get('science')} fani {'<b>olimpiada</b> ' if data.get('olympiad') else ''}testi uchun {number}-savolni rasmini yuboring!",
+        reply_markup=skip_markup)
+
+
+async def edit_start_date(call, test_id, state):
+    datepicker = Datepicker(_get_datepicker_settings())
+    markup = datepicker.start_calendar()
+    await call.message.delete()
+    await call.message.answer("⏱ <b>Olimpiada</b> <b>boshlanish</b> sanasini tanlang.\n"
+                              "So'ng, \"Select\" tugmasini bosing:\n\n"
+                              "Eslatma!\n<b>Olimpiada</b> tanlangan sananing 00:00 vaqtida boshlanadi.",
+                              reply_markup=markup)
+    await state.update_data({'test_id': test_id})
+
+
+@dp.callback_query_handler(Datepicker.datepicker_callback.filter(), state=AddQuestionTestStatesGroup.start_date)
+async def select_start_date(callback_query: types.CallbackQuery, callback_data: dict, state: FSMContext):
+    datepicker = Datepicker(_get_datepicker_settings())
+
+    date = await datepicker.process(callback_query, callback_data)
+    if date:
+        naive_dt = datetime.datetime(date.year, date.month, date.day, 0, 0, 0)
+        await state.update_data({'start_time': naive_dt})
+        datepicker = Datepicker(_get_datepicker_settings())
+        markup = datepicker.start_calendar()
+        info = (f"⏱ <b>Olimpiada</b> boshlanish vaqti: {date.strftime('%d/%m/%Y')}, 00:00:00\n"
+                f"🏁 <b>Olimpiada</b> <b>tugash sanasini tanlang</b>.\n"
+                f"So'ng, \"Select\" tugmasini bosing:\n\n"
+                f"Eslatma!\n<b>Olimpiada</b> tanlangan sananing 00:00 vaqtida tugaydi.")
+        await callback_query.message.edit_text(info, reply_markup=markup)
+        await AddQuestionTestStatesGroup.next()
+
+    await callback_query.answer()
+
+
+@dp.callback_query_handler(Datepicker.datepicker_callback.filter(), state=AddQuestionTestStatesGroup.end_date)
+async def select_end_date(callback_query: types.CallbackQuery, callback_data: dict, state: FSMContext):
+    datepicker = Datepicker(_get_datepicker_settings())
+
+    date = await datepicker.process(callback_query, callback_data)
+    if date:
+        naive_dt = datetime.datetime(date.year, date.month, date.day, 0, 0, 0)
+        await state.update_data({'end_time': naive_dt})
+        data = await state.get_data()
+        test_id = data.get('test_id')
+        olympiad_test = data.get('olympiad')
+        if data.get('start_time') >= naive_dt:
+            await callback_query.message.answer("Tugash vaqti xato, qayta tanlang 👆")
+            return
+        await callback_query.message.delete()
+        await db.update_date_test(data.get('test_id'), data.get('start_time'), naive_dt)
+        info = "✅ <b>Olimpiada</b> testi vaqti o'zgartirildi!"
+        await callback_query.message.answer(info)
+        test_info = await db.select_test_id(test_id)
+        all_tests = await db.select_questions_test_id(test_id)
+        await state.update_data({'tests_count': len(all_tests), 'quantity': test_info[4]})
+
+        start_localized_datetime = test_info[8]
+        stop_localized_datetime = test_info[6]
+        now_localized_datetime = datetime.datetime.now()
+        if now_localized_datetime < start_localized_datetime:
+            status = "⏸ Boshlanmagan!"
+        elif now_localized_datetime < stop_localized_datetime:
+            status = "▶️ Davom etmoqda!"
+        else:
+            status = "⏹ Tugagan!"
+        info = f"{test_info[1]} fani '{test_info[6].date()} - {test_info[3][:2]}' <b>olimpiada</b> testi uchun amalni tanlang:\n"
+        info += f"Holat: {status}\n"
+
+        info += f"Testlar soni: {len(all_tests)}/{test_info[4]} {'✅' if len(all_tests) >= test_info[4] else ''}"
+        await callback_query.message.answer(info, reply_markup=await create_edit_test_markup(test_id, olympiad_test))
+        await AddQuestionTestStatesGroup.test.set()
+    await callback_query.answer()
 
 
 @dp.message_handler(text="Rasm mavjud emas!", state=AddQuestionTestStatesGroup.image)
@@ -386,12 +464,11 @@ async def choice_set_question(call: types.CallbackQuery, state: FSMContext):
     else:
         info = f"{test_info[1]} fani {test_info[2]} - {test_info[3][:2]} testi uchun amalni tanlang:\n"
     info += f"Testlar soni: {len(all_tests)}/{test_info[4]} {'✅' if len(all_tests) >= test_info[4] else ''}"
-    await call.message.edit_text(info, reply_markup=await create_edit_test_markup(test_id))
+    await call.message.edit_text(info, reply_markup=await create_edit_test_markup(test_id, olympiad_test=data.get(
+        'olympiad')))
     await AddQuestionTestStatesGroup.test.set()
 
 
-# (249, 1, 'ergbvrtb4b45hb45', 'Mavjud emas', 1, None, 249, 249, 14)
-# (ques_id, num, ques_uz, ques_ru, resp_true, image_id, ques_id, ques_id, test_id)
 @dp.callback_query_handler(state=AddQuestionTestStatesGroup.update)
 async def choice_set_question(call: types.CallbackQuery, state: FSMContext):
     question = await db.select_question_id(call.data)
@@ -437,13 +514,12 @@ async def send_question_uz(msg: types.Message, state: FSMContext):
     else:
         await db.add_question_test(**data)
         info = "Savol muvaffaqiyatli qo'shildi!"
-    await state.reset_data()
     await msg.answer(info)
     test_id = data.get('test_id')
     test_info = await db.select_test_id(test_id)
     all_tests = await db.select_questions_test_id(test_id)
-    await state.update_data({'olympiad': data.get('olympiad'), 'science': science, 'tests_count': len(all_tests),
-                             'quantity': test_info[4], 'language': language})
+    await state.set_data({'olympiad': data.get('olympiad'), 'science': science, 'tests_count': len(all_tests),
+                          'quantity': test_info[4], 'language': language})
     if data.get('olympiad'):
         start_localized_datetime = test_info[8]
         stop_localized_datetime = test_info[6]
@@ -460,5 +536,5 @@ async def send_question_uz(msg: types.Message, state: FSMContext):
         info = f"{test_info[1]} fani {test_info[2]} - {test_info[3][:2]} testi uchun amalni tanlang:\n"
     info += f"Testlar soni: {len(all_tests)}/{test_info[4]} {'✅' if len(all_tests) >= test_info[4] else ''}"
 
-    await msg.answer(info, reply_markup=await create_edit_test_markup(test_id))
+    await msg.answer(info, reply_markup=await create_edit_test_markup(test_id, olympiad_test=data.get('olympiad')))
     await AddQuestionTestStatesGroup.test.set()

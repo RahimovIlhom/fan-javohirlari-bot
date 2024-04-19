@@ -52,7 +52,7 @@ async def create_all_tests_markup(science, olympiad_test=False):
     return markup
 
 
-async def create_edit_test_markup(test_id):
+async def create_edit_test_markup(test_id, olympiad_test=False):
     markup = InlineKeyboardMarkup(row_width=2)
     markup.insert(InlineKeyboardButton(
         text="O'chirish ❌",
@@ -66,6 +66,11 @@ async def create_edit_test_markup(test_id):
         text="Savolni o'zgartirish ✏️",
         callback_data=await make_callback(test_id, update='edit')
     ))
+    if olympiad_test:
+        markup.insert(InlineKeyboardButton(
+            text="Muddatni o'zgartirish ⏳",
+            callback_data=await make_callback(test_id, update='edit_date')
+        ))
     markup.row(InlineKeyboardButton(
         '⬅️ Orqaga',
         callback_data=await make_callback(test_id, update='back')

@@ -187,6 +187,13 @@ class Database:
                     (new_id, science, datetime.datetime.now().date(), language, count, False, end_time, olympiad, start_time))
         conn.commit()
 
+    async def update_date_test(self, test_id, start_time, end_time):
+        conn = await self.connect
+        cur = conn.cursor()
+        cur.execute("update tests set start_time = %s, end_time = %s where id = %s",
+                    (start_time, end_time, test_id))
+        conn.commit()
+
     async def select_test_id(self, test_id):
         conn = await self.connect
         cur = conn.cursor()

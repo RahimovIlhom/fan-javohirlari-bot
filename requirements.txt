@@ -1,14 +1,12 @@
 aiofiles==23.2.1
 aiogram==2.25.1
 aiogram-datepicker==0.0.8
-aiohttp==3.8.1
 aiosignal==1.3.1
 asgiref==3.8.1
 async-timeout==4.0.3
 attrs==23.2.0
 Babel==2.9.1
 certifi==2024.2.2
-charset-normalizer==3.3.2
 Django==4.1
 environs==9.5.0
 frozenlist==1.4.1

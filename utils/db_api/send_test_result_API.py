@@ -25,7 +25,7 @@ async def post_or_put_result(id, tg_id, result, certificateImage, *args, **kwarg
     data = {
         "id": id,
         "telegrammId": tg_id,
-        "result": result,
+        "result": int(result*30),
         "certificateImage": certificateImage,
         "vaucher": vaucher
     }

@@ -67,10 +67,9 @@ async def solution_test_uz(msg: types.Message, state: FSMContext):
                          reply_markup=download_certificate_markup_uz)
         return
 
-    tashkent_timezone = pytz.timezone('Asia/Tashkent')
     start_localized_datetime = test_app[8]
     stop_localized_datetime = test_app[6]
-    now_localized_datetime = tashkent_timezone.localize(datetime.datetime.now())
+    now_localized_datetime = datetime.datetime.now()
 
     if now_localized_datetime < start_localized_datetime:
         await msg.answer(f"{user[8]} fanidan olimpiada test sinovlari {test_app[8].date()} soat 00:00da boshlanadi!")
@@ -122,10 +121,9 @@ async def solution_test_uz(msg: types.Message, state: FSMContext):
                          reply_markup=download_certificate_markup_ru)
         return
 
-    tashkent_timezone = pytz.timezone('Asia/Tashkent')
     start_localized_datetime = test_app[8].date()
     stop_localized_datetime = test_app[6].date()
-    now_localized_datetime = tashkent_timezone.localize(datetime.datetime.now())
+    now_localized_datetime = datetime.datetime.now()
 
     if now_localized_datetime < start_localized_datetime:
         await msg.answer(f"Олимпиадное тестирование по {user[8]} начнется {test_app[8].date()} в 00:00!")

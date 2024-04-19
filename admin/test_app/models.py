@@ -51,7 +51,7 @@ class TestResult(models.Model):
     science = models.CharField(max_length=20)
     responses = models.CharField(max_length=50)
     result_time = models.DateTimeField(auto_now_add=True)
-    test = models.ForeignKey(Test, on_delete=models.SET_NULL, null=True, blank=True)
+    test_id = models.IntegerField(null=True, blank=True)
     pinfl = models.CharField(max_length=30, null=True, blank=True)
     certificate_image = models.CharField(max_length=255, null=True, blank=True)
 

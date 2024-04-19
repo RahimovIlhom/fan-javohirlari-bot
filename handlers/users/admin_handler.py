@@ -156,10 +156,8 @@ async def choice_start_time(callback_query: types.CallbackQuery, callback_data: 
 
     date = await datepicker.process(callback_query, callback_data)
     if date:
-        tashkent_timezone = pytz.timezone('Asia/Tashkent')
         naive_dt = datetime.datetime(date.year, date.month, date.day, 0, 0, 0)
-        tashkent_start_time = tashkent_timezone.localize(naive_dt)
-        await state.update_data({'start_time': tashkent_start_time})
+        await state.update_data({'start_time': naive_dt})
         datepicker = Datepicker(_get_datepicker_settings())
         markup = datepicker.start_calendar()
         info = (f"⏱ <b>Olimpiada</b> boshlanish vaqti: {date.strftime('%d/%m/%Y')}, 00:00:00\n"
@@ -178,12 +176,10 @@ async def choice_end_time(callback_query: types.CallbackQuery, callback_data: di
 
     date = await datepicker.process(callback_query, callback_data)
     if date:
-        tashkent_timezone = pytz.timezone('Asia/Tashkent')
         naive_dt = datetime.datetime(date.year, date.month, date.day, 0, 0, 0)
-        tashkent_stop_time = tashkent_timezone.localize(naive_dt)
-        await state.update_data({'end_time': tashkent_stop_time})
+        await state.update_data({'end_time': naive_dt})
         data = await state.get_data()
-        if data.get('start_time') >= tashkent_stop_time:
+        if data.get('start_time') >= naive_dt:
             await callback_query.message.answer("Tugash vaqti xato, qayta tanlang 👆")
             return
         await callback_query.message.delete()
@@ -281,15 +277,9 @@ async def edit_test(call: types.CallbackQuery, callback_data: dict, state: FSMCo
     all_tests = await db.select_questions_test_id(test_id)
     await state.update_data({'tests_count': len(all_tests), 'quantity': test_info[4]})
     if olympiad_test:
-        tashkent_timezone = pytz.timezone('Asia/Tashkent')
         start_localized_datetime = test_info[8]
-        print(start_localized_datetime)
-        print(type(start_localized_datetime))
         stop_localized_datetime = test_info[8]
-        # now_localized_datetime = tashkent_timezone.localize(datetime.datetime.now())
         now_localized_datetime = datetime.datetime.now()
-        print(now_localized_datetime)
-        print(type(now_localized_datetime))
         if now_localized_datetime < start_localized_datetime:
             status = "⏸ Boshlanmagan!"
         elif now_localized_datetime < stop_localized_datetime:
@@ -382,10 +372,9 @@ async def choice_set_question(call: types.CallbackQuery, state: FSMContext):
     all_tests = await db.select_questions_test_id(test_id)
     await state.update_data({'tests_count': len(all_tests), 'quantity': test_info[4]})
     if data.get('olympiad'):
-        tashkent_timezone = pytz.timezone('Asia/Tashkent')
         start_localized_datetime = test_info[8]
         stop_localized_datetime = test_info[6]
-        now_localized_datetime = tashkent_timezone.localize(datetime.datetime.now())
+        now_localized_datetime = datetime.datetime.now()
         if now_localized_datetime < start_localized_datetime:
             status = "⏸ Boshlanmagan!"
         elif now_localized_datetime < stop_localized_datetime:
@@ -456,10 +445,9 @@ async def send_question_uz(msg: types.Message, state: FSMContext):
     await state.update_data({'olympiad': data.get('olympiad'), 'science': science, 'tests_count': len(all_tests),
                              'quantity': test_info[4], 'language': language})
     if data.get('olympiad'):
-        tashkent_timezone = pytz.timezone('Asia/Tashkent')
         start_localized_datetime = test_info[8]
         stop_localized_datetime = test_info[6]
-        now_localized_datetime = tashkent_timezone.localize(datetime.datetime.now())
+        now_localized_datetime = datetime.datetime.now()
         if now_localized_datetime < start_localized_datetime:
             status = "⏸ Boshlanmagan!"
         elif now_localized_datetime < stop_localized_datetime:

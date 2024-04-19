@@ -196,7 +196,9 @@ class Database:
     async def delete_test(self, test_id):
         conn = await self.connect
         cur = conn.cursor()
-        cur.execute(f"DELETE FROM tests WHERE id = %s", (test_id,))
+
+        cur.execute("DELETE FROM test_questions WHERE test_id = %s", (test_id,))
+        cur.execute("DELETE FROM tests WHERE id = %s", (test_id,))
         conn.commit()
 
     async def add_question_test(self, number_question, question_uz, question_ru, true_response, test_id, image_id=None,

@@ -259,7 +259,7 @@ async def start_test(call: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     test_id = data.get('test_id')
     question_num = 1
-    questions = await db.select_questions_test_id(test_id)
+    questions = list(await db.select_questions_test_id(test_id))
     question = questions[0]
     questions.pop(0)
     await state.update_data(

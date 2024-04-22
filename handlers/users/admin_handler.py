@@ -1,6 +1,7 @@
 import datetime
 import os
 import time
+from io import BytesIO
 
 import pytz
 from aiogram import types
@@ -16,6 +17,8 @@ from keyboards.inline import create_all_tests_markup, test_callback_data, create
     create_questions_markup, create_edit_question_markup, question_callback_data
 from loader import dp, db, bot
 from states import AddQuestionTestStatesGroup, CreateTestStatesGroup
+from utils import question_photo_link
+from utils.misc.create_certificate import photo_link
 from utils.misc.write_excel import write_data_excel
 
 
@@ -398,7 +401,6 @@ async def add_question_skip_image(message: types.Message, state: FSMContext):
 
 @dp.message_handler(state=AddQuestionTestStatesGroup.image, content_types=ContentType.PHOTO)
 async def add_question_text(message: types.Message, state: FSMContext):
-    await state.update_data({'image_id': message.photo[-1].file_id})
     data = await state.get_data()
     if data.get('language') == 'uzbek':
         word = 'o\'zbek'
@@ -408,6 +410,9 @@ async def add_question_text(message: types.Message, state: FSMContext):
         f"{data.get('science')} fani {'<b>olimpiada</b> ' if data.get('olympiad') else ''}"
         f"testi uchun {data.get('number_question')}-savolni {word} tilida kiriting"
         f"(Oxirgi qismda to'g'ri variantni raqam orqali ifodalang):", reply_markup=ReplyKeyboardRemove())
+    photo = message.photo[-1]
+    image_url = await question_photo_link(photo)
+    await state.update_data({'image_id': image_url})
     await AddQuestionTestStatesGroup.next()
 
 

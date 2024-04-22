@@ -1,9 +1,11 @@
+from io import BytesIO
 import aiohttp
+from aiogram import types
 
 
-async def photo_link(photo: str) -> str:
+async def question_photo_link(photo: types.photo_size.PhotoSize) -> str:
     from loader import bot
-    with open(photo, 'rb') as file:
+    with await photo.download(BytesIO()) as file:
         form = aiohttp.FormData()
         form.add_field(
             name='file',

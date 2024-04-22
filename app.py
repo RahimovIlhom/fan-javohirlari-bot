@@ -1,6 +1,6 @@
 from aiogram import executor
 
-from loader import dp
+from loader import dp, main
 import middlewares, filters, handlers
 from utils.notify_admins import on_startup_notify
 from utils.set_bot_commands import set_default_commands
@@ -12,6 +12,7 @@ async def on_startup(dispatcher):
 
     # Bot ishga tushgani haqida adminga xabar berish
     await on_startup_notify(dispatcher)
+    await main()
 
 
 if __name__ == '__main__':

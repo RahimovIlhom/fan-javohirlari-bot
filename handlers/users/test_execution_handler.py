@@ -259,7 +259,9 @@ async def start_test(call: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     test_id = data.get('test_id')
     question_num = 1
-    question = await db.select_question(test_id, question_num)
+    questions = await db.select_questions_test_id(test_id)
+    question = questions[0]
+    questions.pop(0)
     await state.update_data(
         {'question_number': question_num, 'responses': f'{question[4]}', 'start_time': datetime.datetime.now()})
     if data.get('language') == 'uzbek':
@@ -268,13 +270,12 @@ async def start_test(call: types.CallbackQuery, state: FSMContext):
     else:
         test_info = (f"Вопрос 1.\n\n"
                      f"{question[3].replace('>', '&gt').replace('<', '&lt')}")
+    await state.update_data({'image': bool(question[5]), 'questions': questions})
     if question[5]:
-        await state.update_data({'image': True})
         await call.message.delete()
         await call.message.answer_photo(question[5], caption=test_info,
                                         reply_markup=await make_keyboard_test_responses(data.get('language')))
     else:
-        await state.update_data({'image': False})
         await call.message.delete()
         await call.message.answer(test_info, reply_markup=await make_keyboard_test_responses(data.get('language')))
     await TestStatesGroup.next()
@@ -296,7 +297,8 @@ async def err_ready_test(msg: types.Message, state: FSMContext):
 @dp.callback_query_handler(callback_data.filter(), state=TestStatesGroup.execution)
 async def handle_callback_query(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
     data = await state.get_data()
-    test_id, number, count, user_resp, current_resp, responses, language, image = (
+    questions, test_id, number, count, user_resp, current_resp, responses, language, image = (
+        data.get('questions'),
         data.get('test_id'),
         data.get('question_number'),
         data.get('questions_count'),
@@ -318,13 +320,20 @@ async def handle_callback_query(call: types.CallbackQuery, callback_data: dict, 
 
     await call.message.edit_caption(caption.replace('>', '&gt').replace('<', '&lt'), reply_markup=None) if image else await call.message.edit_text(caption.replace('>', '&gt').replace('<', '&lt'), reply_markup=None)
 
+    if questions:
+        question = questions[0]
+        questions.pop(0)
+    else:
+        await TestStatesGroup.next()
+        await handle_test_completion(call, state, test_id, user_resp, language, responses)
+        return
+
     if number >= count:
         await TestStatesGroup.next()
         await handle_test_completion(call, state, test_id, user_resp, language, responses)
         return
 
-    question = await db.select_question(test_id, number + 1)
-    await state.update_data({'question_number': number + 1, 'responses': responses + str(question[4]), 'image': bool(question[5])})
+    await state.update_data({'question_number': number + 1, 'responses': responses + str(question[4]), 'image': bool(question[5]), 'questions': questions})
 
     test_info_template = "Вопрос {}.\n\n{}" if language != 'uzbek' else "{}-savol.\n\n{}"
     test_info = test_info_template.format(number + 1, question[3 if language != 'uzbek' else 2].replace('>', '&gt').replace('<', '&lt'))

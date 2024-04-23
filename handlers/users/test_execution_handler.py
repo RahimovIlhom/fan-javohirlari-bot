@@ -61,11 +61,11 @@ async def solution_test_uz(msg: types.Message, state: FSMContext):
         await msg.answer(f"Hozirda {user[8]} fanidan olimpiada testi mavjud emas!")
         return
 
-    if await db.select_result_test_user(msg.from_user.id, user[8], True):
-        await msg.answer(f"{user[8]} fanidan olimpiada testini yechib bo'lgansiz!\n"
-                         f"Sertifikatingizni yuklab olish uchun quyidagi tugmani bosing.",
-                         reply_markup=download_certificate_markup_uz)
-        return
+    # if await db.select_result_test_user(msg.from_user.id, user[8], True):
+    #     await msg.answer(f"{user[8]} fanidan olimpiada testini yechib bo'lgansiz!\n"
+    #                      f"Sertifikatingizni yuklab olish uchun quyidagi tugmani bosing.",
+    #                      reply_markup=download_certificate_markup_uz)
+    #     return
 
     start_localized_datetime = test_app[8]
     stop_localized_datetime = test_app[6]
@@ -115,11 +115,11 @@ async def solution_test_uz(msg: types.Message, state: FSMContext):
         await msg.answer(f"Сейчас нет олимпиадного теста по {user[8]} предмету!")
         return
 
-    if await db.select_result_test_user(msg.from_user.id, sciences_dict.get(user[8]), True):
-        await msg.answer(f"Вы успешно сдали олимпиадный тест по {user[8]} предмету!\n"
-                         f"Для загрузки вашего сертификата нажмите на следующую кнопку.",
-                         reply_markup=download_certificate_markup_ru)
-        return
+    # if await db.select_result_test_user(msg.from_user.id, sciences_dict.get(user[8]), True):
+    #     await msg.answer(f"Вы успешно сдали олимпиадный тест по {user[8]} предмету!\n"
+    #                      f"Для загрузки вашего сертификата нажмите на следующую кнопку.",
+    #                      reply_markup=download_certificate_markup_ru)
+    #     return
 
     start_localized_datetime = test_app[8].date()
     stop_localized_datetime = test_app[6].date()

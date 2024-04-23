@@ -50,30 +50,29 @@ class Database:
 
     async def add_or_update_user(self, tg_id, language, fullname, phone, region, district, school, science, sc1='-',
                                  sc2='-', sc3='-', pinfl='-', *args, **kwargs):
-        existing_user = await self.select_user(tg_id)
+        existing_user = await self.select_user(str(tg_id))
         if existing_user:
             SQL_query = ("UPDATE users SET language=%s, fullname=%s, phone_number=%s, region=%s, district=%s, "
                          "school_number=%s, science_1=%s, science_2=%s, science_3=%s, olimpia_science=%s, "
                          "update_time=%s, pinfl=%s WHERE tg_id=%s;")
-            await self.execute_query(SQL_query, (
-                language, fullname, phone, region, district, school, sc1, sc2, sc3, science, datetime.datetime.now(),
-                pinfl, tg_id))
+            await self.execute_query(SQL_query, language, fullname, str(phone), region, district, school, sc1, sc2, sc3, science, datetime.datetime.now(), pinfl, str(tg_id))
         else:
             sql_query = "SELECT MAX(id) FROM users;"
             max_id = (await self.execute_query(sql_query))[0][0]
             new_id = (max_id if max_id else 0) + 1
-            SQL_query = ("INSERT INTO users (id, tg_id, language, fullname, phone_number, region, district, school_number, "
-                         "science_1, science_2, science_3, olimpia_science, created_time, update_time, pinfl) VALUES "
+            SQL_query = ("INSERT INTO users (id, tg_id, language, fullname, phone_number, region, district, "
+                         "school_number, science_1, science_2, science_3, olimpia_science, created_time, update_time, "
+                         "pinfl) VALUES"
                          "(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);")
-            await self.execute_query(SQL_query, (new_id, tg_id, language, fullname, phone, region, district, school, sc1, sc2, sc3, science,
-                                    datetime.datetime.now(), datetime.datetime.now(), pinfl))
-        user_data = await self.select_user(tg_id)
+            await self.execute_query(SQL_query, new_id, str(tg_id), language, fullname, str(phone), region, district, school, sc1, sc2, sc3, science,
+                                    datetime.datetime.now(), datetime.datetime.now(), pinfl)
+        user_data = await self.select_user(str(tg_id))
         await post_or_put_data(*user_data)
 
     async def update_pinfl(self, tg_id, pinfl):
         SQL_query = "UPDATE users SET pinfl=%s WHERE tg_id=%s;"
-        await self.execute_query(SQL_query, (pinfl, tg_id))
-        user_data = await self.select_user(tg_id)
+        await self.execute_query(SQL_query, *(pinfl, str(tg_id)))
+        user_data = await self.select_user(str(tg_id))
         await post_or_put_data(*user_data)
 
     async def select_column_names(self, *args, **kwargs):
@@ -89,7 +88,7 @@ class Database:
         test_id = tests[-1][0] if tests else None
         if test_id:
             query = "SELECT * FROM test_result WHERE tg_id = %s AND test_id = %s"
-            resp = await self.execute_query(query, tg_id, test_id)
+            resp = await self.execute_query(query, str(tg_id), test_id)
             if resp:
                 return resp[-1]
             return None
@@ -99,10 +98,14 @@ class Database:
     async def select_test(self, science, language=None, olympiad_test=False):
         if language is None:
             query = "SELECT * FROM tests WHERE science = %s AND is_confirm = %s AND olympiad_test=%s"
-            return (await self.execute_query(query, science, True, olympiad_test))[0]
+            resp = await self.execute_query(query, science, True, olympiad_test)
         else:
             query = "SELECT * FROM tests WHERE science = %s AND is_confirm = %s AND language = %s AND olympiad_test=%s"
-            return (await self.execute_query(query, science, True, language, olympiad_test))[0]
+            resp = await self.execute_query(query, science, True, language, olympiad_test)
+        if resp:
+            return resp[0]
+        else:
+            return False
 
     async def select_tests(self, science, olympiad_test=False):
         query = "SELECT * FROM tests WHERE science = %s AND is_confirm = %s AND olympiad_test = %s"
@@ -120,7 +123,7 @@ class Database:
         query = ("INSERT INTO test_result (id, tg_id, language, fullname, phone_number, region, district, "
                  "school_number, science, responses, result_time, test_id, pinfl, certificate_image) VALUES (%s, "
                  "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);")
-        await self.execute_query(query, new_id, tg_id, language, fullname, phone_number, region, district, school_number,
+        await self.execute_query(query, new_id, str(tg_id), language, fullname, str(phone_number), region, district, school_number,
                                  science, responses, result_time, test_id, pinfl, certificate_image)
 
     async def select_science_tests(self, science, olympiad_test=False):

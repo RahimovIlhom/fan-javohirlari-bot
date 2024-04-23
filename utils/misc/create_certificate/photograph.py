@@ -12,8 +12,10 @@ async def photo_link(photo: str) -> str:
         session = await bot.get_session()
         async with session.post('https://telegra.ph/upload', data=form) as response:
             img_src = await response.json()
+            print("--------------------------------")
             print(img_src)
             print(response.status)
+            print("---------------------------------")
 
     link = 'http://telegra.ph/' + img_src[0]["src"]
     return link

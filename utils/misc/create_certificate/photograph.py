@@ -12,10 +12,11 @@ async def photo_link(photo: str) -> str:
         session = await bot.get_session()
         async with session.post('https://telegra.ph/upload', data=form) as response:
             img_src = await response.json()
-            print("--------------------------------")
-            print(img_src)
-            print(response.status)
-            print("---------------------------------")
+            if 'error' in img_src:
+                error_message = img_src['error']
+                print("Xato:", error_message)
+                return ""  # Yoki siz bu erorning o'zgartirilgan versiyasini chiqaring
+            else:
+                link = 'http://telegra.ph/' + img_src[0]["src"]
+                return link
 
-    link = 'http://telegra.ph/' + img_src[0]["src"]
-    return link

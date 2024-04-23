@@ -18,7 +18,6 @@ from keyboards.inline import create_all_tests_markup, test_callback_data, create
 from loader import dp, db, bot
 from states import AddQuestionTestStatesGroup, CreateTestStatesGroup
 from utils import question_photo_link
-from utils.misc.create_certificate import photo_link
 from utils.misc.write_excel import write_data_excel
 
 

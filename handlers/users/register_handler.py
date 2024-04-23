@@ -15,7 +15,6 @@ from keyboards.inline import make_check_channels_subs
 from loader import dp, db, bot
 from states import RegisterStatesGroup
 from utils.misc import subscription
-from utils.misc.create_certificate import photo_link
 
 
 @dp.message_handler(text='O’zbek tili', state=RegisterStatesGroup.language)

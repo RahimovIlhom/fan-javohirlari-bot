@@ -220,4 +220,8 @@ class Database:
 
     async def get_token(self):
         query = "SELECT * FROM tokens WHERE active = %s"
-        return (await self.execute_query(query, True))[0]
+        tokens = await self.execute_query(query, True)
+        if tokens:
+            return tokens[0]
+        else:
+            return None

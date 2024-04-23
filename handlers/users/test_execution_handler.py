@@ -401,10 +401,10 @@ async def handle_test_completion(call, state, test_id, user_resp, language, resp
         image_path = await create_certificate(user_id=user_id, fullname=user[3], image_index=image_index, science=user[8], language=language)
         await call.message.answer_photo(InputFile(image_path), caption="Sizni sertifikat bilan tabriklaymiz!")
         image_url = await photo_link(image_path)
-        os.remove(image_path) if os.path.exists(image_path) else None
         await db.add_test_result(test_id, user_id, language, *user[3:8], data.get('science'),
                                  db_responses, datetime.datetime.now(), user[-1], image_url, data.get('olympiad_test'))
         await post_or_put_result(user[0], user_id, result, image_url)
+        os.remove(image_path) if os.path.exists(image_path) else None
     else:
         info_template = "✅ Test yakunlandi!\nHurmatli {}, siz test savollarining {} tasiga to’g’ri va {} tasiga noto’g’ri javob berdingiz." if language == 'uzbek' else "✅ Тест завершен!\nУважаемый(ая) {}, Вы ответили на {} вопросов теста правильно, а на {} — неправильно."
         info = info_template.format(user_name, db_responses.count('1'), db_responses.count('0'))

@@ -409,7 +409,7 @@ async def handle_test_completion(call, state, test_id, user_resp, language, resp
         await call.message.answer(info, reply_markup=menu_test_uz if language == 'uzbek' else menu_test_ru)
         image_url = None
     await db.add_test_result(test_id, user_id, language, *user[3:8], data.get('science'),
-                             db_responses, datetime.datetime.now(), user[-1], image_url)
+                             db_responses, datetime.datetime.now(), user[-1], image_url, data.get('olympiad_test'))
     await asyncio.sleep(2)
     await state.reset_data()
     await state.finish()

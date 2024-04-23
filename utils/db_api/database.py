@@ -116,7 +116,14 @@ class Database:
         return (await self.execute_query(query, test_id, number))[0]
 
     async def add_test_result(self, test_id, tg_id, language, fullname, phone_number, region, district, school_number,
-                              science, responses, result_time, pinfl=None, certificate_image=None, *args, **kwargs):
+                              science, responses, result_time, pinfl=None, certificate_image=None, olympiad_test=False, *args, **kwargs):
+        test_result = await self.select_result_test_user(str(tg_id), science, olympiad_test)
+        if test_result:
+            query = ("UPDATE test_result SET language=%s, fullname=%s, phone_number=%s, region=%s, district=%s, "
+                     "school_number=%s, science=%s, responses=%s, result_time=%s, pinfl=%s, certificate_image=%s "
+                     "WHERE test_id=%s AND tg_id=%s;")
+            await self.execute_query(query, language, fullname, str(phone_number), region, district, school_number, science, responses, result_time, pinfl, certificate_image, test_id, str(tg_id))
+            return
         query = "SELECT MAX(id) FROM test_result;"
         max_id = (await self.execute_query(query))[0][0]
         new_id = (max_id if max_id else 0) + 1

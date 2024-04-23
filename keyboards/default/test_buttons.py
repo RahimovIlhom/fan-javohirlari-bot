@@ -3,7 +3,7 @@ from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 
 menu_test_uz = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text='🏆 OLIMPIADA (1-bosqich)')],
+        [KeyboardButton(text='🏆 OLIMPIADA (1-bosqich)'), KeyboardButton(text="Sertifikatni yuklab olish 📥")],
         [KeyboardButton(text='👨‍💻 TEST TOPSHIRISH')],
     ],
     resize_keyboard=True

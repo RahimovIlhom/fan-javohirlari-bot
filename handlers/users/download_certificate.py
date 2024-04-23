@@ -10,7 +10,7 @@ from loader import dp, db
 from utils.misc.create_certificate import create_certificate
 
 
-@dp.message_handler(IsPrivate(), text="Sertifikatni yuklab olish 📥")
+@dp.message_handler(IsPrivate(), text="📥 Sertifikatni yuklab olish")
 async def download_certificate(msg: types.Message, state: FSMContext):
     tg_id = msg.from_user.id
     user = await db.select_user(tg_id)

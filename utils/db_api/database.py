@@ -123,15 +123,15 @@ class Database:
                      "school_number=%s, science=%s, responses=%s, result_time=%s, pinfl=%s, certificate_image=%s "
                      "WHERE test_id=%s AND tg_id=%s;")
             await self.execute_query(query, language, fullname, str(phone_number), region, district, school_number, science, responses, result_time, pinfl, certificate_image, test_id, str(tg_id))
-            return
-        query = "SELECT MAX(id) FROM test_result;"
-        max_id = (await self.execute_query(query))[0][0]
-        new_id = (max_id if max_id else 0) + 1
-        query = ("INSERT INTO test_result (id, tg_id, language, fullname, phone_number, region, district, "
-                 "school_number, science, responses, result_time, test_id, pinfl, certificate_image) VALUES (%s, "
-                 "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);")
-        await self.execute_query(query, new_id, str(tg_id), language, fullname, str(phone_number), region, district, school_number,
-                                 science, responses, result_time, test_id, pinfl, certificate_image)
+        else:
+            query = "SELECT MAX(id) FROM test_result;"
+            max_id = (await self.execute_query(query))[0][0]
+            new_id = (max_id if max_id else 0) + 1
+            query = ("INSERT INTO test_result (id, tg_id, language, fullname, phone_number, region, district, "
+                     "school_number, science, responses, result_time, test_id, pinfl, certificate_image) VALUES (%s, "
+                     "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);")
+            await self.execute_query(query, new_id, str(tg_id), language, fullname, str(phone_number), region, district, school_number,
+                                     science, responses, result_time, test_id, pinfl, certificate_image)
 
     async def select_science_tests(self, science, olympiad_test=False):
         query = "SELECT * FROM tests WHERE science = %s AND olympiad_test = %s"

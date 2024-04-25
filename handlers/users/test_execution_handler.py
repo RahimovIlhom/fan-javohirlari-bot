@@ -354,29 +354,28 @@ async def handle_test_completion(call, state, test_id, user_resp, language, resp
     if data.get('olympiad_test'):
         text1 = ("✅ Olimpiada testi yakunlandi!\n\nHurmatli {}, siz test savollarining {} tasiga to'g'ri javob berib, "
                  "{} ballni qo'lga kiritdingiz.\n\nTabriklaymiz, siz olimpiadaning 2-bosqichiga o'tdingiz. 2-bosqich "
-                 "may oyida Fan va texnologiyalar universitetining binosida bo'lib o'tadi.\n\nShu bilan birga, "
+                 "may oyida Fan va texnologiyalar universitetining binosida bo'lib o'tadi. \n\nShu bilan birga, "
                  "siz 2 million so'mlik vaucherni ham qo'lga kiritdingiz. Ushbu vaucherni Fan va texnologiyalar "
-                 "universitetida kunduzgi ta'lim shaklidagi shartnoma to'lovi uchun bir martalik chegirma sifatida "
-                 "ishlatishingiz mumkin.\n\nFan va texnologiyalar universitetining yangiliklaridan xabardor bo'lib "
-                 "turish uchun @usatuzb telegram kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun "
-                 "78-888-38-88 telefon raqamiga qo'ng'iroq qiling.\n\nBizni sizni kutamiz!")
+                 "universitetida shartnoma to'lovi uchun bir martalik chegirma sifatida ishlatishingiz mumkin.\n\nFan "
+                 "va texnologiyalar universitetining yangiliklaridan xabardor bo'lib turish uchun @usatuzb telegram "
+                 "kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun 78-888-38-88 telefon raqamiga qo'ng'iroq "
+                 "qiling.\n\nBizni sizni kutamiz!")
         text2 = ("✅ Olimpiada testi yakunlandi!\n\nHurmatli {}, siz test savollarining {} tasiga to'g'ri javob berib, "
                  "{} ballni qo'lga kiritdingiz.\n\nTabriklaymiz, siz olimpiadaning 2-bosqichiga o'tdingiz. 2-bosqich "
                  "may oyida Fan va texnologiyalar universitetining binosida bo'lib o'tadi. \n\nShu bilan birga, "
                  "siz 1,5 million so'mlik vaucherni ham qo'lga kiritdingiz. Ushbu vaucherni Fan va texnologiyalar "
-                 "universitetida kunduzgi ta'lim shaklidagi shartnoma to'lovi uchun bir martalik chegirma sifatida "
-                 "ishlatishingiz mumkin.\n\nFan va texnologiyalar universitetining yangiliklaridan xabardor bo'lib "
-                 "turish uchun @usatuzb telegram kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun "
-                 "78-888-38-88 telefon raqamiga qo'ng'iroq qiling.\n\nBizni sizni kutamiz!")
+                 "universitetida shartnoma to'lovi uchun bir martalik chegirma sifatida ishlatishingiz mumkin.\n\nFan "
+                 "va texnologiyalar universitetining yangiliklaridan xabardor bo'lib turish uchun @usatuzb telegram "
+                 "kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun 78-888-38-88 telefon raqamiga qo'ng'iroq "
+                 "qiling.\n\nBizni sizni kutamiz!")
         text3 = ("✅ Olimpiada testi yakunlandi!\n\nHurmatli {}, siz test savollarining {} tasiga to'g'ri javob berib, "
                  "{} ballni qo'lga kiritdingiz.\n\nTabriklaymiz, siz olimpiadada muvaffaqiyatli ishtirok etdingiz, "
-                 "ammo 2-bosqichda ishtirok etish uchun yetarlicha ball to'play olmadingiz. "
-                 "\n\nShunga qaramay, universitetimizda ta'lim olish istagini bildirganingiz va faolligingiz uchun "
-                 "sizga qiymati 1 million so'mlik vaucherni taqdim etamiz. Ushbu vaucherni Fan va texnologiyalar "
-                 "universitetida kunduzgi ta'lim shaklidagi shartnoma to'lovi uchun bir martalik chegirma sifatida "
-                 "ishlatishingiz mumkin. Shu bilan birga, Fan va texnologiyalar universitetiga hujjatlaringizni "
-                 "topshirsangiz, sizni imtihonlarsiz qabul qilamiz."
-                 "\n\nFan va texnologiyalar universitetining yangiliklaridan xabardor bo'lib turish uchun "
+                 "ammo 2-bosqichda ishtirok etish uchun yetarlicha ball to'play olmadingiz. \n\nShunga qaramay, "
+                 "universitetimizda ta'lim olish istagini bildirganingiz va faolligingiz uchun sizga qiymati 1 "
+                 "million so'mlik vaucherni taqdim etamiz. Ushbu vaucherni Fan va texnologiyalar universitetida "
+                 "shartnoma to'lovi uchun bir martalik chegirma sifatida ishlatishingiz mumkin. Shu bilan birga, "
+                 "Fan va texnologiyalar universitetiga hujjatlaringizni topshirsangiz, sizni imtihonlarsiz qabul "
+                 "qilamiz. \n\nFan va texnologiyalar universitetining yangiliklaridan xabardor bo'lib turish uchun "
                  "@usatuzb telegram kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun 78-888-38-88 telefon "
                  "raqamiga qo'ng'iroq qiling.\n\nSiz bilan universitetimizning talabasi sifatida uchrashishimizni "
                  "sabrsizlik bilan kutib qolamiz! 🤗")
@@ -406,7 +405,11 @@ async def handle_test_completion(call, state, test_id, user_resp, language, resp
         await post_or_put_result(user[0], user_id, result, image_url)
         os.remove(image_path) if os.path.exists(image_path) else None
     else:
-        info_template = "✅ Test yakunlandi!\nHurmatli {}, siz test savollarining {} tasiga to’g’ri va {} tasiga noto’g’ri javob berdingiz." if language == 'uzbek' else "✅ Тест завершен!\nУважаемый(ая) {}, Вы ответили на {} вопросов теста правильно, а на {} — неправильно."
+        info_template = ("✅ Test yakunlandi!\nHurmatli {}, siz test savollarining {} tasiga to’g’ri va {} tasiga "
+                         "noto’g’ri javob berdingiz.") if language == 'uzbek' else ("✅ Тест завершен!\nУважаемый(ая) {"
+                                                                                    "}, Вы ответили на {} вопросов "
+                                                                                    "теста правильно, "
+                                                                                    "а на {} — неправильно.")
         info = info_template.format(user_name, db_responses.count('1'), db_responses.count('0'))
         await call.message.answer(info, reply_markup=menu_test_uz if language == 'uzbek' else menu_test_ru)
         image_url = None

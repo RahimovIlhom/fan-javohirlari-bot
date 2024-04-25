@@ -12,7 +12,7 @@ FONT_MONTSERRAT_BOLD = os.path.join(FONT_FOLDER, 'Montserrat-Bold.otf')
 FONT_MONTSERRAT_REGULAR = os.path.join(FONT_FOLDER, 'Montserrat-Regular.otf')
 TEXT_COLOR = (39, 64, 121)
 VALID_IMAGE_INDEX_RANGE = range(4)
-IMAGES = ['cer001', 'cer002', 'cer003', '0004']
+IMAGES = ['cer001', 'cer002', 'cer003', 'cer004']
 
 
 async def create_certificate(user_id, image_index, fullname, science, language='uzbek'):

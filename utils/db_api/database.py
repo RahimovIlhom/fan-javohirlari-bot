@@ -55,7 +55,8 @@ class Database:
             SQL_query = ("UPDATE users SET language=%s, fullname=%s, phone_number=%s, region=%s, district=%s, "
                          "school_number=%s, science_1=%s, science_2=%s, science_3=%s, olimpia_science=%s, "
                          "update_time=%s, pinfl=%s WHERE tg_id=%s;")
-            await self.execute_query(SQL_query, language, fullname, str(phone), region, district, school, sc1, sc2, sc3, science, datetime.datetime.now(), pinfl, str(tg_id))
+            await self.execute_query(SQL_query, language, fullname, str(phone), region, district, school, sc1, sc2, sc3,
+                                     science, datetime.datetime.now(), pinfl, str(tg_id))
         else:
             sql_query = "SELECT MAX(id) FROM users;"
             max_id = (await self.execute_query(sql_query))[0][0]
@@ -64,8 +65,9 @@ class Database:
                          "school_number, science_1, science_2, science_3, olimpia_science, created_time, update_time, "
                          "pinfl) VALUES"
                          "(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);")
-            await self.execute_query(SQL_query, new_id, str(tg_id), language, fullname, str(phone), region, district, school, sc1, sc2, sc3, science,
-                                    datetime.datetime.now(), datetime.datetime.now(), pinfl)
+            await self.execute_query(SQL_query, new_id, str(tg_id), language, fullname, str(phone), region, district,
+                                     school, sc1, sc2, sc3, science,
+                                     datetime.datetime.now(), datetime.datetime.now(), pinfl)
         user_data = await self.select_user(str(tg_id))
         await post_or_put_data(*user_data)
 
@@ -116,13 +118,15 @@ class Database:
         return (await self.execute_query(query, test_id, number))[0]
 
     async def add_test_result(self, test_id, tg_id, language, fullname, phone_number, region, district, school_number,
-                              science, responses, result_time, pinfl=None, certificate_image=None, olympiad_test=False, *args, **kwargs):
+                              science, responses, result_time, pinfl=None, certificate_image=None, olympiad_test=False,
+                              *args, **kwargs):
         test_result = await self.select_result_test_user(str(tg_id), science, olympiad_test)
         if test_result:
             query = ("UPDATE test_result SET language=%s, fullname=%s, phone_number=%s, region=%s, district=%s, "
                      "school_number=%s, science=%s, responses=%s, result_time=%s, pinfl=%s, certificate_image=%s "
                      "WHERE test_id=%s AND tg_id=%s;")
-            await self.execute_query(query, language, fullname, str(phone_number), region, district, school_number, science, responses, result_time, pinfl, certificate_image, test_id, str(tg_id))
+            await self.execute_query(query, language, fullname, str(phone_number), region, district, school_number,
+                                     science, responses, result_time, pinfl, certificate_image, test_id, str(tg_id))
         else:
             query = "SELECT MAX(id) FROM test_result;"
             max_id = (await self.execute_query(query))[0][0]
@@ -130,7 +134,8 @@ class Database:
             query = ("INSERT INTO test_result (id, tg_id, language, fullname, phone_number, region, district, "
                      "school_number, science, responses, result_time, test_id, pinfl, certificate_image) VALUES (%s, "
                      "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);")
-            await self.execute_query(query, new_id, str(tg_id), language, fullname, str(phone_number), region, district, school_number,
+            await self.execute_query(query, new_id, str(tg_id), language, fullname, str(phone_number), region, district,
+                                     school_number,
                                      science, responses, result_time, test_id, pinfl, certificate_image)
 
     async def select_science_tests(self, science, olympiad_test=False):

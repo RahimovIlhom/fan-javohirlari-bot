@@ -279,12 +279,8 @@ class Database:
         tests = await self.execute_query(query1, True, olympiad_test)
         tests_id = [test_app[0] for test_app in tests]
         placeholders = ', '.join(['%s'] * len(tests_id))
-        query2 = (f"SELECT tg_id "
+        query2 = (f"SELECT DISTINCT tg_id "
                   f"FROM test_result "
-                  f"WHERE test_id IN ({placeholders}) "
-                  f"GROUP BY tg_id "
-                  f"HAVING SUM(CASE WHEN responses LIKE '%%1%%' THEN 1 ELSE 0 END) >= 2;")
+                  f"WHERE test_id IN ({placeholders}) AND "
+                  f"LENGTH(REPLACE(responses, '0', '')) / LENGTH(responses) > 0.66;")
         return await self.execute_query(query2, *tests_id)
-
-
-

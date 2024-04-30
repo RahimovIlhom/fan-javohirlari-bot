@@ -17,7 +17,7 @@ async def application_next_level_olympiad(msg: types.Message):
     if not await db.get_next_olympiad_user(msg.from_user.id):
         test_result = await db.select_result_user(msg.from_user.id)
         if test_result:
-            info = ("Hurmatli {}! Sizni yana bir bor \"Fan javohirlari\" olimpiadasining 2-bosqichiga o'tganingiz bilan"
+            info = ("Hurmatli {}! Sizni yana bir bor \"Fan javohirlari\" olimpiadasining 2-bosqichiga o'tganingiz bilan "
                     "tabriklaymiz! Olimpiadaning 2-bosqichi Toshkent shahridagi Fan va texnologiyalar universitetida "
                     "oflayn bo'lib o'tadi.  "
                     "\n\nAytingchi, siz Toshkentga universitet binosiga kelib, olimpiadada ishtirok etasizmi?")
@@ -129,9 +129,11 @@ async def true_name_success(call: types.CallbackQuery, state: FSMContext):
             f"bo'lib o'tadi. Olimpiada kuni va vaqtini @fanjavohirlari kanalimiz orqali e'lon qilamiz.\n\nImtihonda "
             f"ishtirok etish uchun quyidagi ID-raqamni yozib oling yoki eslab qoling.\n\nSizning ID-raqamingiz: "
             f"{call.from_user.id}\n\nFan va texnologiyalar universiteti manzili: Toshkent shahri, Algoritm dahasi, "
-            f"Diydor ko'chasi 71.\nMo'ljal: sobiq Roison binosi (Lokatsiya)\n\nYangiliklardan xabardor bo'lib turish "
-            f"uchun @usatuzb telegram kanaliga a'zo bo'lishni unutmang! Savollaringiz bo'lsa, 78-888-38-88 telefon "
-            f"raqamiga qo'ng'iroq qiling.")
+            f"Diydor ko'chasi 71.\nMo'ljal: sobiq Roison binosi (<a "
+            f"href='https://yandex.uz/maps/10335/tashkent/?ll=69.163080%2C41.261028&mode=whatshere&whatshere%5Bpoint"
+            f"%5D=69.163055%2C41.261021&whatshere%5Bzoom%5D=19.98&z=19'>Lokatsiya</a>)\n\nYangiliklardan xabardor "
+            f"bo'lib turish uchun @usatuzb telegram kanaliga a'zo bo'lishni unutmang! Savollaringiz bo'lsa, "
+            f"78-888-38-88 telefon raqamiga qo'ng'iroq qiling.")
     if science:
         for res in test_result:
             if res[7] == science:
@@ -154,9 +156,11 @@ async def new_fullname(msg: types.Message, state: FSMContext):
             f"bo'lib o'tadi. Olimpiada kuni va vaqtini @fanjavohirlari kanalimiz orqali e'lon qilamiz.\n\nImtihonda "
             f"ishtirok etish uchun quyidagi ID-raqamni yozib oling yoki eslab qoling.\n\nSizning ID-raqamingiz: "
             f"{msg.from_user.id}\n\nFan va texnologiyalar universiteti manzili: Toshkent shahri, Algoritm dahasi, "
-            f"Diydor ko'chasi 71.\nMo'ljal: sobiq Roison binosi (Lokatsiya)\n\nYangiliklardan xabardor bo'lib turish "
-            f"uchun @usatuzb telegram kanaliga a'zo bo'lishni unutmang! Savollaringiz bo'lsa, 78-888-38-88 telefon "
-            f"raqamiga qo'ng'iroq qiling.")
+            f"Diydor ko'chasi 71.\nMo'ljal: sobiq Roison binosi (<a "
+            f"href='https://yandex.uz/maps/10335/tashkent/?ll=69.163080%2C41.261028&mode=whatshere&whatshere%5Bpoint"
+            f"%5D=69.163055%2C41.261021&whatshere%5Bzoom%5D=19.98&z=19'>Lokatsiya</a>)\n\nYangiliklardan xabardor "
+            f"bo'lib turish uchun @usatuzb telegram kanaliga a'zo bo'lishni unutmang! Savollaringiz bo'lsa, "
+            f"78-888-38-88 telefon raqamiga qo'ng'iroq qiling.")
     if science:
         for res in test_result:
             if res[7] == science:

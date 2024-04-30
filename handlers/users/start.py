@@ -7,15 +7,16 @@ from aiogram.types import ReplyKeyboardRemove, InputFile, ContentType
 
 from data.config import ADMINS, CHANNELS, sciences_dict
 from filters import IsPrivate
-from keyboards.default import language_markup, menu_markup, menu_test_ru, menu_test_uz, id_card_ru_markup, \
+from keyboards.default import language_markup, menu_markup, menu_test_ru, id_card_ru_markup, \
     id_card_uz_markup
+from keyboards.default import menu_user_markup
 from keyboards.inline.checksubs import make_check_channels_subs
 from loader import dp, db, bot
 from states import RegisterStatesGroup, PINFLStateGroup
 from utils.misc import subscription
 
 
-@dp.message_handler(CommandStart(), IsPrivate(), state='*')
+@dp.message_handler(IsPrivate(), CommandStart(), state='*')
 async def bot_start(message: types.Message, state: FSMContext):
     if str(message.from_user.id) in ADMINS:
         await message.answer("Menu", reply_markup=menu_markup)
@@ -47,7 +48,7 @@ async def bot_start(message: types.Message, state: FSMContext):
             await PINFLStateGroup.pinfl.set()
             return
         if user[2] == 'uzbek':
-            await message.answer("Test topshirish uchun quyidagi tugmadan foydalaning 👇", reply_markup=menu_test_uz)
+            await message.answer("Test topshirish uchun quyidagi tugmadan foydalaning 👇", reply_markup=await menu_user_markup(message.from_user.id))
         else:
             await message.answer("Используйте кнопку ниже, чтобы пройти тест 👇", reply_markup=menu_test_ru)
         await state.finish()
@@ -89,7 +90,7 @@ async def add_pinfl_user(msg: types.Message, state: FSMContext):
                 await msg.answer("Shaxsiy raqam faqat raqamlardan tashkil topadi!\nIltimos qayta kiriting:")
                 return
         info = "Ma'lumot saqlandi.\nTest topshirish uchun quyidagi tugmadan foydalaning 👇"
-        markup = menu_test_uz
+        markup = await menu_user_markup(msg.from_user.id)
     else:
         if msg.text != "Я еще не получил(а) ID-карту":
             if len(msg.text) != 14:
@@ -143,7 +144,7 @@ async def checker(call: types.CallbackQuery, state: FSMContext):
     if final_status:
         if user[2] == 'uzbek':
             result = success_uz if data.get('level') == 'registration' else "✅ Barcha kanallarga a'zo bo'ldingiz!"
-            markup = menu_test_uz
+            markup = await menu_user_markup(call.from_user.id)
         else:
             result = success_ru if data.get('level') == 'registration' else "✅ Вы подписались на все каналы!"
             markup = menu_test_ru

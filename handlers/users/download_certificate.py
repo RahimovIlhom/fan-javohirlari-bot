@@ -5,7 +5,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.types import InputFile, ReplyKeyboardRemove
 
 from filters import IsPrivate
-from keyboards.default import menu_test_uz
+from keyboards.default import menu_user_markup
 from loader import dp, db
 from utils.misc.create_certificate import create_certificate
 
@@ -36,9 +36,9 @@ async def set_name_func(msg: types.Message, state: FSMContext):
     science = data.get('science')
     cer_path = await create_certificate(user_id, image_index, fullname, science)
     if cer_path:
-        await msg.answer_photo(InputFile(cer_path), caption="Sizning sertifikatingiz!", reply_markup=menu_test_uz)
+        await msg.answer_photo(InputFile(cer_path), caption="Sizning sertifikatingiz!", reply_markup=await menu_user_markup(msg.from_user.id))
         os.remove(cer_path) if os.path.exists(cer_path) else None
     else:
-        await msg.answer("Error certificate create", reply_markup=menu_test_uz)
+        await msg.answer("Error certificate create", reply_markup=await menu_user_markup(msg.from_user.id))
     await state.reset_data()
     await state.finish()

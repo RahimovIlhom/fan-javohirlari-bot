@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users',
     'test_app',
+    'olympiad2',
 ]
 
 MIDDLEWARE = [

@@ -28,8 +28,7 @@ def _get_datepicker_settings():
 @dp.message_handler(IsPrivate(), text="📃 O'quvchilar ro'yxati", user_id=ADMINS)
 async def show_users_excel(msg: types.Message):
     columns = await db.select_column_names()
-    users = await db.select_users()
-    await write_data_excel(columns, users)
+    await write_data_excel(columns, await db.select_users())
     file = InputFile(path_or_bytesio="data/users/data.xlsx")
     await msg.answer_document(file, caption="Barcha o'quvchilar ro'yxati!")
     if os.path.exists('data/users/data.xlsx'):

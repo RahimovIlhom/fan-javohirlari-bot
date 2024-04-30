@@ -10,8 +10,9 @@ from aiogram.dispatcher import FSMContext
 
 from data.config import sciences_uz, sciences_ru, sciences_dict, responses_uz, responses_ru
 from filters import IsPrivate
-from keyboards.default import sciences_uz_markup, sciences_ru_markup, menu_test_ru, menu_test_uz, id_card_uz_markup, \
+from keyboards.default import sciences_uz_markup, sciences_ru_markup, menu_test_ru, id_card_uz_markup, \
     id_card_ru_markup
+from keyboards.default import menu_user_markup
 from keyboards.inline import start_test_markup_uz, start_test_markup_ru, make_keyboard_test_responses, callback_data
 from loader import dp, db
 from states import TestStatesGroup, PINFLStateGroup
@@ -185,7 +186,7 @@ async def back_base_menu(msg: types.Message, state: FSMContext):
     data = await state.get_data()
     if data.get('language') == 'uzbek':
         await msg.answer("Test topshirib ko’rish uchun quyidagi tugmani bosing.",
-                         reply_markup=menu_test_uz)
+                         reply_markup=await menu_user_markup(msg.from_user.id))
     else:
         await msg.answer("Чтобы попробовать пройти тест, нажмите кнопку ниже.",
                          reply_markup=menu_test_ru)
@@ -394,14 +395,14 @@ async def handle_test_completion(call, state, test_id, user_resp, language, resp
         info_template = (text1 if result >= 0.85 else text2 if result >= 0.65 else text3) if result > 0.33 else text4
 
         info = info_template.format(user_name, true_response_count, true_response_count*2)
-        await call.message.answer(info, reply_markup=menu_test_uz if language == 'uzbek' else menu_test_ru)
+        image_url = "Mavjud emas"
+        await db.add_test_result(test_id, user_id, language, *user[3:8], data.get('science'),
+                                 db_responses, datetime.datetime.now(), user[-1], image_url, data.get('olympiad_test'))
+        await call.message.answer(info, reply_markup=await menu_user_markup(call.from_user.id) if language == 'uzbek' else menu_test_ru)
 
         image_path = await create_certificate(user_id=user_id, fullname=user[3], image_index=image_index, science=user[8], language=language)
         await call.message.answer_photo(InputFile(image_path), caption="Sizni sertifikat bilan tabriklaymiz!")
         # image_url = await photo_link(image_path)
-        image_url = "Mavjud emas"
-        await db.add_test_result(test_id, user_id, language, *user[3:8], data.get('science'),
-                                 db_responses, datetime.datetime.now(), user[-1], image_url, data.get('olympiad_test'))
         await post_or_put_result(user[0], user_id, result, image_url)
         os.remove(image_path) if os.path.exists(image_path) else None
     else:
@@ -411,7 +412,7 @@ async def handle_test_completion(call, state, test_id, user_resp, language, resp
                                                                                     "теста правильно, "
                                                                                     "а на {} — неправильно.")
         info = info_template.format(user_name, db_responses.count('1'), db_responses.count('0'))
-        await call.message.answer(info, reply_markup=menu_test_uz if language == 'uzbek' else menu_test_ru)
+        await call.message.answer(info, reply_markup=await menu_user_markup(call.from_user.id) if language == 'uzbek' else menu_test_ru)
         image_url = None
         await db.add_test_result(test_id, user_id, language, *user[3:8], data.get('science'),
                                  db_responses, datetime.datetime.now(), user[-1], image_url, data.get('olympiad_test'))

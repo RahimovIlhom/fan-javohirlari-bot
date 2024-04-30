@@ -15,6 +15,9 @@ menu_markup = ReplyKeyboardMarkup(
             KeyboardButton(text="🏆 Olimpiada bo'limi"),
             KeyboardButton(text="📈 Olimpiada natijalari")
         ],
+        [
+            KeyboardButton(text="🏆 Olimpiada (2-bosqich) bo'limi")
+        ],
     ],
     resize_keyboard=True
 )
@@ -39,6 +42,24 @@ olympiad_tests_markup = ReplyKeyboardMarkup(
         [
             KeyboardButton(text="📓 Olimpiada testlari"),
             KeyboardButton(text="➕ Olimpiada testi ochish")
+        ],
+        [
+            KeyboardButton(text="⬅️ Orqaga")
+        ]
+    ],
+    resize_keyboard=True
+)
+
+next_level_olympiad_menu = ReplyKeyboardMarkup(
+    keyboard=[
+        [
+            KeyboardButton(text="📅 2-bosqich Olimpiada kunlari"),
+        ],
+        [
+            KeyboardButton(text="📃 2-bosqich Olimpiadistlar ro'yxati"),
+        ],
+        [
+            KeyboardButton(text="✉️ 2-bosqich Olimpiadistlar xabar yuborish"),
         ],
         [
             KeyboardButton(text="⬅️ Orqaga")

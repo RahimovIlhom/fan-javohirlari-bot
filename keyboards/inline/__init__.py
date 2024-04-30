@@ -8,3 +8,5 @@ from .question_inlines import create_edit_question_markup, question_callback_dat
 from .result_test_inlines import day_tests_markup
 from .checksubs import make_check_channels_subs
 from .certificate_inlines import download_certificate_markup_uz, download_certificate_markup_ru
+from .next_olympiad_inlines import (participation_choices, are_you_graduate, choices_olympiad_science, my_name_is_right,
+                                    sciences_callback_data, next_level_olympiad_markup)

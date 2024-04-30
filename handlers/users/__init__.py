@@ -5,4 +5,6 @@ from . import register_handler
 from . import admin_handler
 from . import result_test_handler
 from . import download_certificate
+from . import application_for_next_olympiada
+from . import next_level_olympiad_admin
 from . import echo

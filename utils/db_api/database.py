@@ -230,3 +230,61 @@ class Database:
             return tokens[0]
         else:
             return None
+
+    async def get_olympians_next_level(self, science):
+        query = ("SELECT id, tg_id, fullname, phone_number, region, district, school_number, olympic_science, date, "
+                 "time, created_time, pinfl, result FROM olympians WHERE olympic_science = %s")
+        olympians = await self.execute_query(query, science)
+        columns_names = ("id", "tg_id", "fullname", "phone_number", "region", "district", "school_number",
+                         "olympic_science", "date", "time", "created_time", "pinfl", "result")
+        return columns_names, olympians
+
+    async def select_result_user(self, tg_id, olympiad_test=True):
+        query1 = "SELECT id FROM tests WHERE is_confirm = %s AND olympiad_test = %s"
+        tests = await self.execute_query(query1, True, olympiad_test)
+        tests_id = [test_app[0] for test_app in tests]
+        placeholders = ','.join(['%s'] * len(tests_id))
+        query2 = (f"SELECT id, tg_id, fullname, phone_number, region, district, school_number, science, responses, "
+                  f"pinfl FROM test_result WHERE tg_id = %s AND test_id IN ({placeholders})")
+        params = [str(tg_id)] + tests_id
+        responses = await self.execute_query(query2, *params)
+        resp = []
+        if responses:
+            for test_result in responses:
+                if test_result[8].count('1') / len(test_result[8]) > 0.66:
+                    resp.append(test_result)
+        return resp
+
+    async def add_next_olympiad_user(self, tg_id, fullname, phone_number, region, district, school_number,
+                                     olympic_science, result, pinfl):
+        query1 = "SELECT * FROM olympians WHERE tg_id = %s"
+        if await self.execute_query(query1, tg_id):
+            query_update = ("UPDATE olympians SET fullname = %s, phone_number = %s, region = %s, district = %s, "
+                            "school_number = %s, olympic_science = %s, result = %s, pinfl = %s WHERE tg_id = %s")
+            await self.execute_query(query_update, fullname, phone_number, region, district, school_number,
+                                     olympic_science, result, pinfl, tg_id)
+        else:
+            query_add = ("INSERT INTO olympians (tg_id, fullname, phone_number, region, district, school_number, "
+                         "olympic_science, result, pinfl, created_time) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, "
+                         "%s);")
+            await self.execute_query(query_add, tg_id, fullname, phone_number, region, district, school_number,
+                                     olympic_science, result, pinfl, datetime.datetime.now())
+
+    async def get_next_olympiad_user(self, tg_id):
+        query = "SELECT * FROM olympians WHERE tg_id = %s"
+        return await self.execute_query(query, tg_id)
+
+    async def select_next_level_users(self, olympiad_test=True):
+        query1 = "SELECT id FROM tests WHERE is_confirm = %s AND olympiad_test = %s"
+        tests = await self.execute_query(query1, True, olympiad_test)
+        tests_id = [test_app[0] for test_app in tests]
+        placeholders = ', '.join(['%s'] * len(tests_id))
+        query2 = (f"SELECT tg_id "
+                  f"FROM test_result "
+                  f"WHERE test_id IN ({placeholders}) "
+                  f"GROUP BY tg_id "
+                  f"HAVING SUM(CASE WHEN responses LIKE '%%1%%' THEN 1 ELSE 0 END) >= 2;")
+        return await self.execute_query(query2, *tests_id)
+
+
+

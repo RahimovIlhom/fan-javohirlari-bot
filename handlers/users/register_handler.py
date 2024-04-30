@@ -10,7 +10,8 @@ from aiogram.types import ContentType, ReplyKeyboardRemove, InputFile
 from data.config import regions_uz, regions_ru, sciences_uz, sciences_ru, CHANNELS, sciences_dict
 from keyboards.default import phone_ru_markup, phone_uz_markup, language_markup, region_uz_markup, region_ru_markup, \
     district_uz_markup, district_ru_markup, back_uz_button, back_ru_button, sciences_uz_markup, sciences_ru_markup, \
-    make_lessons_uz_markup, make_lessons_ru_markup, menu_test_uz, menu_test_ru, id_card_uz_markup, id_card_ru_markup
+    make_lessons_uz_markup, make_lessons_ru_markup, menu_test_ru, id_card_uz_markup, id_card_ru_markup
+from keyboards.default import menu_user_markup
 from keyboards.inline import make_check_channels_subs
 from loader import dp, db, bot
 from states import RegisterStatesGroup
@@ -394,7 +395,7 @@ async def send_science(msg: types.Message, state: FSMContext):
         success = ("Tabriklaymiz, siz ro'yxatdan o'tdingiz. O'zingizni sinab ko'rish uchun test topshirmoqchi "
                    "bo'lsangiz, quyidagi \"Test topshirish\" tugmasini bosing.")
         data_refresh = "♻️ Ma'lumotlar qayta ishlanmoqda!"
-        markup = menu_test_uz
+        markup = await menu_user_markup(msg.from_user.id)
     else:
         if msg.text == '⬅️ Назад':
             await msg.answer("По каким предметам вы будете участвовать в онлайн-занятиях? (Можно выбрать до 3-х "

@@ -1,4 +1,6 @@
 import datetime
+from uuid import uuid4
+
 import aiomysql
 from environs import Env
 from utils.db_api import post_or_put_data
@@ -233,10 +235,10 @@ class Database:
 
     async def get_olympians_next_level(self, science):
         query = ("SELECT id, tg_id, fullname, phone_number, region, district, school_number, olympic_science, date, "
-                 "time, created_time, pinfl, result FROM olympians WHERE olympic_science = %s")
+                 "time, created_time, pinfl, result, password FROM olympians WHERE olympic_science = %s")
         olympians = await self.execute_query(query, science)
         columns_names = ("id", "tg_id", "fullname", "phone_number", "region", "district", "school_number",
-                         "olympic_science", "date", "time", "created_time", "pinfl", "result")
+                         "olympic_science", "date", "time", "created_time", "pinfl", "result", "password")
         return columns_names, olympians
 
     async def select_result_user(self, tg_id, olympiad_test=True):
@@ -267,14 +269,21 @@ class Database:
             await self.execute_query(query_update, fullname, phone_number, region, district, school_number,
                                      olympic_science, result, pinfl, tg_id)
         else:
+            user_password = str(uuid4()).split('-')[0][:5]
+            while await self.execute_query("select * from olympians where password = %s", user_password):
+                user_password = str(uuid4()).split('-')[0][:5]
             query_add = ("INSERT INTO olympians (tg_id, fullname, phone_number, region, district, school_number, "
-                         "olympic_science, result, pinfl, created_time) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, "
-                         "%s);")
+                         "olympic_science, result, pinfl, created_time, password) VALUES (%s, %s, %s, %s, %s, %s, %s, "
+                         "%s, %s, %s, %s);")
             await self.execute_query(query_add, tg_id, fullname, phone_number, region, district, school_number,
-                                     olympic_science, result, pinfl, datetime.datetime.now())
+                                     olympic_science, result, pinfl, datetime.datetime.now(), user_password)
 
     async def get_next_olympiad_user(self, tg_id):
         query = "SELECT * FROM olympians WHERE tg_id = %s"
+        return await self.execute_query(query, tg_id)
+
+    async def get_next_olympiad_user_password(self, tg_id):
+        query = "SELECT password FROM olympians WHERE tg_id = %s"
         return await self.execute_query(query, tg_id)
 
     async def select_next_level_users(self, olympiad_test=True):

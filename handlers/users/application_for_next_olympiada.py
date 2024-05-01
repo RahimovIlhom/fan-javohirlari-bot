@@ -123,22 +123,24 @@ async def true_name_success(call: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     science = data.get('science', None)
     test_result = data.get('test_result')
-    resp = (f"Tabriklaymiz! Siz \"Fan javohirlari\" olimpiadasining 2-bosqichiga muvaffaqiyatli ro'yxatdan o'tdingiz."
-            f"\n\n{science if science else test_result[0][7]} fani bo'yicha 2-bosqich Toshkent shahridagi Fan va "
-            f"texnologiyalar universitetida oflayn "
-            f"bo'lib o'tadi. Olimpiada kuni va vaqtini @fanjavohirlari kanalimiz orqali e'lon qilamiz.\n\nImtihonda "
-            f"ishtirok etish uchun quyidagi ID-raqamni yozib oling yoki eslab qoling.\n\nSizning ID-raqamingiz: "
-            f"{call.from_user.id}\n\nFan va texnologiyalar universiteti manzili: Toshkent shahri, Algoritm dahasi, "
-            f"Diydor ko'chasi 71.\nMo'ljal: sobiq Roison binosi (<a "
-            f"href='https://yandex.uz/maps/10335/tashkent/?ll=69.163080%2C41.261028&mode=whatshere&whatshere%5Bpoint"
-            f"%5D=69.163055%2C41.261021&whatshere%5Bzoom%5D=19.98&z=19'>Lokatsiya</a>)\n\nYangiliklardan xabardor "
-            f"bo'lib turish uchun @usatuzb telegram kanaliga a'zo bo'lishni unutmang! Savollaringiz bo'lsa, "
-            f"78-888-38-88 telefon raqamiga qo'ng'iroq qiling.")
     if science:
         for res in test_result:
             if res[7] == science:
                 test_result = [res]
     await db.add_next_olympiad_user(*test_result[0][1:8], test_result[0][8].count('1'), test_result[0][9])
+    password = await db.get_next_olympiad_user_password(call.from_user.id)
+    resp = (f"Tabriklaymiz! Siz \"Fan javohirlari\" olimpiadasining 2-bosqichiga muvaffaqiyatli ro'yxatdan o'tdingiz."
+            f"\n\n{science if science else test_result[0][7]} fani bo'yicha 2-bosqich Toshkent shahridagi Fan va "
+            f"texnologiyalar universitetida oflayn "
+            f"bo'lib o'tadi. Olimpiada kuni va vaqtini @fanjavohirlari kanalimiz orqali e'lon qilamiz.\n\nImtihonda "
+            f"ishtirok etish uchun quyidagi ID-raqamni yozib oling yoki eslab qoling.\n\nSizning ID-raqamingiz: "
+            f"{password[0][0]}"
+            f"\n\nFan va texnologiyalar universiteti manzili: Toshkent shahri, Algoritm dahasi, "
+            f"Diydor ko'chasi 71.\nMo'ljal: sobiq Roison binosi (<a "
+            f"href='https://yandex.uz/maps/10335/tashkent/?ll=69.163080%2C41.261028&mode=whatshere&whatshere%5Bpoint"
+            f"%5D=69.163055%2C41.261021&whatshere%5Bzoom%5D=19.98&z=19'>Lokatsiya</a>)\n\nYangiliklardan xabardor "
+            f"bo'lib turish uchun @usatuzb telegram kanaliga a'zo bo'lishni unutmang! Savollaringiz bo'lsa, "
+            f"78-888-38-88 telefon raqamiga qo'ng'iroq qiling.")
     await call.message.delete()
     await call.message.answer(resp, reply_markup=await menu_user_markup(call.from_user.id))
     await state.reset_data()
@@ -151,22 +153,24 @@ async def new_fullname(msg: types.Message, state: FSMContext):
     science = data.get('science', None)
     test_result = data.get('test_result')
     fullname = msg.text
-    resp = (f"Tabriklaymiz! Siz \"Fan javohirlari\" olimpiadasining 2-bosqichiga muvaffaqiyatli ro'yxatdan o'tdingiz."
-            f"\n\n{science if science else test_result[0][7]} fani bo'yicha 2-bosqich Toshkent shahridagi Fan va texnologiyalar universitetida oflayn "
-            f"bo'lib o'tadi. Olimpiada kuni va vaqtini @fanjavohirlari kanalimiz orqali e'lon qilamiz.\n\nImtihonda "
-            f"ishtirok etish uchun quyidagi ID-raqamni yozib oling yoki eslab qoling.\n\nSizning ID-raqamingiz: "
-            f"{msg.from_user.id}\n\nFan va texnologiyalar universiteti manzili: Toshkent shahri, Algoritm dahasi, "
-            f"Diydor ko'chasi 71.\nMo'ljal: sobiq Roison binosi (<a "
-            f"href='https://yandex.uz/maps/10335/tashkent/?ll=69.163080%2C41.261028&mode=whatshere&whatshere%5Bpoint"
-            f"%5D=69.163055%2C41.261021&whatshere%5Bzoom%5D=19.98&z=19'>Lokatsiya</a>)\n\nYangiliklardan xabardor "
-            f"bo'lib turish uchun @usatuzb telegram kanaliga a'zo bo'lishni unutmang! Savollaringiz bo'lsa, "
-            f"78-888-38-88 telefon raqamiga qo'ng'iroq qiling.")
     if science:
         for res in test_result:
             if res[7] == science:
                 test_result = [res]
     await db.add_next_olympiad_user(msg.from_user.id, fullname, *test_result[0][3:8], test_result[0][8].count('1'),
                                     test_result[0][9])
+    password = await db.get_next_olympiad_user_password(msg.from_user.id)
+    resp = (f"Tabriklaymiz! Siz \"Fan javohirlari\" olimpiadasining 2-bosqichiga muvaffaqiyatli ro'yxatdan o'tdingiz."
+            f"\n\n{science if science else test_result[0][7]} fani bo'yicha 2-bosqich Toshkent shahridagi Fan va texnologiyalar universitetida oflayn "
+            f"bo'lib o'tadi. Olimpiada kuni va vaqtini @fanjavohirlari kanalimiz orqali e'lon qilamiz.\n\nImtihonda "
+            f"ishtirok etish uchun quyidagi ID-raqamni yozib oling yoki eslab qoling.\n\nSizning ID-raqamingiz: "
+            f"{password[0][0]}"
+            f"\n\nFan va texnologiyalar universiteti manzili: Toshkent shahri, Algoritm dahasi, "
+            f"Diydor ko'chasi 71.\nMo'ljal: sobiq Roison binosi (<a "
+            f"href='https://yandex.uz/maps/10335/tashkent/?ll=69.163080%2C41.261028&mode=whatshere&whatshere%5Bpoint"
+            f"%5D=69.163055%2C41.261021&whatshere%5Bzoom%5D=19.98&z=19'>Lokatsiya</a>)\n\nYangiliklardan xabardor "
+            f"bo'lib turish uchun @usatuzb telegram kanaliga a'zo bo'lishni unutmang! Savollaringiz bo'lsa, "
+            f"78-888-38-88 telefon raqamiga qo'ng'iroq qiling.")
     await msg.answer(resp, reply_markup=await menu_user_markup(msg.from_user.id))
     await state.reset_data()
     await state.finish()

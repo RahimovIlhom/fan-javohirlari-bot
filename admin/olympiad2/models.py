@@ -14,6 +14,7 @@ class NextLevelOlympian(models.Model):
     created_time = models.DateTimeField(auto_now_add=True)
     pinfl = models.CharField(max_length=30, null=True, blank=True)
     result = models.DecimalField(max_digits=5, decimal_places=2)
+    password = models.CharField(max_length=10, null=True, blank=True)
 
     class Meta:
         db_table = 'olympians'

@@ -242,18 +242,21 @@ class Database:
     async def select_result_user(self, tg_id, olympiad_test=True):
         query1 = "SELECT id FROM tests WHERE is_confirm = %s AND olympiad_test = %s"
         tests = await self.execute_query(query1, True, olympiad_test)
-        tests_id = [test_app[0] for test_app in tests]
-        placeholders = ','.join(['%s'] * len(tests_id))
-        query2 = (f"SELECT id, tg_id, fullname, phone_number, region, district, school_number, science, responses, "
-                  f"pinfl FROM test_result WHERE tg_id = %s AND test_id IN ({placeholders})")
-        params = [str(tg_id)] + tests_id
-        responses = await self.execute_query(query2, *params)
-        resp = []
-        if responses:
-            for test_result in responses:
-                if test_result[8].count('1') / len(test_result[8]) > 0.66:
-                    resp.append(test_result)
-        return resp
+        if tests:
+            tests_id = [test_app[0] for test_app in tests]
+            placeholders = ','.join(['%s'] * len(tests_id))
+            query2 = (f"SELECT id, tg_id, fullname, phone_number, region, district, school_number, science, responses, "
+                      f"pinfl FROM test_result WHERE tg_id = %s AND test_id IN ({placeholders})")
+            params = [str(tg_id)] + tests_id
+            responses = await self.execute_query(query2, *params)
+            resp = []
+            if responses:
+                for test_result in responses:
+                    if test_result[8].count('1') / len(test_result[8]) > 0.66:
+                        resp.append(test_result)
+            return resp
+        else:
+            return []
 
     async def add_next_olympiad_user(self, tg_id, fullname, phone_number, region, district, school_number,
                                      olympic_science, result, pinfl):

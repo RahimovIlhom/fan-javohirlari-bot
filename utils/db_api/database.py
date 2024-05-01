@@ -282,5 +282,7 @@ class Database:
         query2 = (f"SELECT DISTINCT tg_id "
                   f"FROM test_result "
                   f"WHERE test_id IN ({placeholders}) AND "
-                  f"LENGTH(REPLACE(responses, '0', '')) / LENGTH(responses) > 0.66;")
+                  f"LENGTH(REPLACE(responses, '0', '')) / LENGTH(responses) > 0.66 "
+                  f"AND tg_id NOT IN (SELECT tg_id FROM olympians);")
+
         return await self.execute_query(query2, *tests_id)

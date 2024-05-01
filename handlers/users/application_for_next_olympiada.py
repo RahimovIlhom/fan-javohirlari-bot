@@ -152,7 +152,7 @@ async def new_fullname(msg: types.Message, state: FSMContext):
     test_result = data.get('test_result')
     fullname = msg.text
     resp = (f"Tabriklaymiz! Siz \"Fan javohirlari\" olimpiadasining 2-bosqichiga muvaffaqiyatli ro'yxatdan o'tdingiz."
-            f"\n\n{science} fani bo'yicha 2-bosqich Toshkent shahridagi Fan va texnologiyalar universitetida oflayn "
+            f"\n\n{science if science else test_result[0][7]} fani bo'yicha 2-bosqich Toshkent shahridagi Fan va texnologiyalar universitetida oflayn "
             f"bo'lib o'tadi. Olimpiada kuni va vaqtini @fanjavohirlari kanalimiz orqali e'lon qilamiz.\n\nImtihonda "
             f"ishtirok etish uchun quyidagi ID-raqamni yozib oling yoki eslab qoling.\n\nSizning ID-raqamingiz: "
             f"{msg.from_user.id}\n\nFan va texnologiyalar universiteti manzili: Toshkent shahri, Algoritm dahasi, "

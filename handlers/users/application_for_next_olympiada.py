@@ -26,7 +26,7 @@ async def application_next_level_olympiad(msg: types.Message):
             await msg.answer("Siz Fan olimpiadasida 2-bosqichga o'ta olmagansiz!",
                              reply_markup=await menu_user_markup(msg.from_user.id))
     else:
-        await msg.answer("Siz allaqachon 2-bosqich olimpiada uchun ro'yxatdan o'tgansiz!",
+        await msg.answer("Siz 2-bosqich uchun ariza yuborib bo'lgansiz!",
                          reply_markup=await menu_user_markup(msg.from_user.id))
 
 
@@ -70,6 +70,8 @@ async def no_go_olympian(call: types.CallbackQuery):
             "universitetining yangiliklaridan xabardor bo'lib turish uchun @usatuzb telegram kanaliga a'zo bo'lishni "
             "unutmang! Savollaringiz bo'lsa, 78-888-38-88 telefon raqamiga qo'ng'iroq qiling.\n\nSiz bilan "
             "universitetimizning talabasi sifatida uchrashishimizni sabrsizlik bilan kutib qolamiz! 🤗")
+    test_result = await db.select_result_user(call.from_user.id)
+    await db.add_next_olympiad_user(*test_result[0][1:8], test_result[0][8].count('1'), test_result[0][9], "can_t_go")
     await call.message.edit_text(resp, reply_markup=None)
 
 
@@ -102,6 +104,8 @@ async def yes_or_no_graduate(call: types.CallbackQuery, state: FSMContext):
             "o'z bilimingizni sinab ko'rasiz va universitimizda grant asosida ta'lim olish imkoniyatini qo'lga "
             "kiritasiz degan umiddamiz!\n\nSiz bilan universitetimizning talabasi sifatida uchrashishimizni "
             "sabrsizlik bilan kutib qolamiz! 🤗")
+    test_result = await db.select_result_user(call.from_user.id)
+    await db.add_next_olympiad_user(*test_result[0][1:8], test_result[0][8].count('1'), test_result[0][9], "not_graduate")
     await call.message.edit_text(resp, None)
     await state.reset_data()
     await state.finish()
@@ -127,7 +131,7 @@ async def true_name_success(call: types.CallbackQuery, state: FSMContext):
         for res in test_result:
             if res[7] == science:
                 test_result = [res]
-    await db.add_next_olympiad_user(*test_result[0][1:8], test_result[0][8].count('1'), test_result[0][9])
+    await db.add_next_olympiad_user(*test_result[0][1:8], test_result[0][8].count('1'), test_result[0][9], 'comes')
     password = await db.get_next_olympiad_user_password(call.from_user.id)
     resp = (f"Tabriklaymiz! Siz \"Fan javohirlari\" olimpiadasining 2-bosqichiga muvaffaqiyatli ro'yxatdan o'tdingiz."
             f"\n\n{science if science else test_result[0][7]} fani bo'yicha 2-bosqich Toshkent shahridagi Fan va "
@@ -158,7 +162,7 @@ async def new_fullname(msg: types.Message, state: FSMContext):
             if res[7] == science:
                 test_result = [res]
     await db.add_next_olympiad_user(msg.from_user.id, fullname, *test_result[0][3:8], test_result[0][8].count('1'),
-                                    test_result[0][9])
+                                    test_result[0][9], 'comes')
     password = await db.get_next_olympiad_user_password(msg.from_user.id)
     resp = (f"Tabriklaymiz! Siz \"Fan javohirlari\" olimpiadasining 2-bosqichiga muvaffaqiyatli ro'yxatdan o'tdingiz."
             f"\n\n{science if science else test_result[0][7]} fani bo'yicha 2-bosqich Toshkent shahridagi Fan va texnologiyalar universitetida oflayn "

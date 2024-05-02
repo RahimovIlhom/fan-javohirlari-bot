@@ -235,10 +235,10 @@ class Database:
 
     async def get_olympians_next_level(self, science):
         query = ("SELECT id, tg_id, fullname, phone_number, region, district, school_number, olympic_science, date, "
-                 "time, created_time, pinfl, result, password FROM olympians WHERE olympic_science = %s")
+                 "time, created_time, pinfl, result, password, status FROM olympians WHERE olympic_science = %s")
         olympians = await self.execute_query(query, science)
         columns_names = ("id", "tg_id", "fullname", "phone_number", "region", "district", "school_number",
-                         "olympic_science", "date", "time", "created_time", "pinfl", "result", "password")
+                         "olympic_science", "date", "time", "created_time", "pinfl", "result", "password", 'status')
         return columns_names, olympians
 
     async def select_result_user(self, tg_id, olympiad_test=True):
@@ -261,22 +261,26 @@ class Database:
             return []
 
     async def add_next_olympiad_user(self, tg_id, fullname, phone_number, region, district, school_number,
-                                     olympic_science, result, pinfl):
+                                     olympic_science, result, pinfl, status):
         query1 = "SELECT * FROM olympians WHERE tg_id = %s"
-        if await self.execute_query(query1, tg_id):
-            query_update = ("UPDATE olympians SET fullname = %s, phone_number = %s, region = %s, district = %s, "
-                            "school_number = %s, olympic_science = %s, result = %s, pinfl = %s WHERE tg_id = %s")
-            await self.execute_query(query_update, fullname, phone_number, region, district, school_number,
-                                     olympic_science, result, pinfl, tg_id)
-        else:
+        if status == 'comes':
             user_password = str(uuid4()).split('-')[0][:5]
             while await self.execute_query("select * from olympians where password = %s", user_password):
                 user_password = str(uuid4()).split('-')[0][:5]
+        else:
+            user_password = None
+        if await self.execute_query(query1, tg_id):
+            query_update = ("UPDATE olympians SET fullname = %s, phone_number = %s, region = %s, district = %s, "
+                            "school_number = %s, olympic_science = %s, result = %s, pinfl = %s, password = %s, "
+                            "status = %s WHERE tg_id = %s")
+            await self.execute_query(query_update, fullname, phone_number, region, district, school_number,
+                                     olympic_science, result, pinfl, user_password, status, tg_id)
+        else:
             query_add = ("INSERT INTO olympians (tg_id, fullname, phone_number, region, district, school_number, "
-                         "olympic_science, result, pinfl, created_time, password) VALUES (%s, %s, %s, %s, %s, %s, %s, "
-                         "%s, %s, %s, %s);")
+                         "olympic_science, result, pinfl, created_time, password, status) VALUES (%s, %s, %s, %s, %s, "
+                         "%s, %s, %s, %s, %s, %s, %s);")
             await self.execute_query(query_add, tg_id, fullname, phone_number, region, district, school_number,
-                                     olympic_science, result, pinfl, datetime.datetime.now(), user_password)
+                                     olympic_science, result, pinfl, datetime.datetime.now(), user_password, status)
 
     async def get_next_olympiad_user(self, tg_id):
         query = "SELECT * FROM olympians WHERE tg_id = %s"

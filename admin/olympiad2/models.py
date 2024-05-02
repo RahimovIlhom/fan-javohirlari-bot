@@ -15,6 +15,7 @@ class NextLevelOlympian(models.Model):
     pinfl = models.CharField(max_length=30, null=True, blank=True)
     result = models.DecimalField(max_digits=5, decimal_places=2)
     password = models.CharField(max_length=10, null=True, blank=True)
+    status = models.CharField(max_length=100, default="comes")
 
     class Meta:
         db_table = 'olympians'

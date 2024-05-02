@@ -66,13 +66,13 @@ async def send_olympiad_users_message(msg: types.Message, state: FSMContext):
                 await bot.send_photo(user[0], photo=photo_id, caption=msg.caption,
                                      reply_markup=next_level_olympiad_markup)
             except Exception as e:
-                print(f"Failed to send message to user {user[1]}: {e}")
+                print(f"Failed to send message to user {user[0]}: {e}")
     else:
         for user in users:
             try:
                 await bot.send_message(user[0], msg.text, reply_markup=next_level_olympiad_markup)
             except Exception as e:
-                print(f"Failed to send message to user {user[1]}: {e}")
+                print(f"Failed to send message to user {user[0]}: {e}")
     await msg.answer("Xabar 2-bosqich olimpiadachilarga yuborildi!", reply_markup=menu_markup)
     await state.finish()
 

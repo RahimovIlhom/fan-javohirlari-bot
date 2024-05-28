@@ -3,3 +3,4 @@ from .text_execution_states import TestStatesGroup
 from .tests_states import AddQuestionTestStatesGroup, CreateTestStatesGroup
 from .result_test_states import ResultTestStatesGroup
 from .next_level_olympiad_states import OlympiansListState, ApplicationOlympiad
+from .send_advertising import AdvertisingStates

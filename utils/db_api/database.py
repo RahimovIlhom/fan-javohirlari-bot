@@ -40,6 +40,11 @@ class Database:
         result = await self.execute_query(query)
         return result
 
+    async def select_Tashkent_users(self, *args, **kwargs):
+        query = "SELECT * FROM users WHERE region = %s"
+        result = await self.execute_query(query, "Toshkent shahri")
+        return result
+
     async def select_user(self, tg_id, *args, **kwargs):
         query = "SELECT * FROM users WHERE tg_id = %s"
         result = await self.execute_query(query, str(tg_id))

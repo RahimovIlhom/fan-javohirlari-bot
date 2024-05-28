@@ -6,6 +6,7 @@ from io import BytesIO
 import pytz
 from aiogram import types
 from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters import Command
 from aiogram.types import InputFile, ReplyKeyboardRemove, ContentType
 from aiogram_datepicker import Datepicker, DatepickerSettings
 
@@ -16,7 +17,7 @@ from keyboards.default import tests_markup, olympiad_tests_markup
 from keyboards.inline import create_all_tests_markup, test_callback_data, create_edit_test_markup, \
     create_questions_markup, create_edit_question_markup, question_callback_data
 from loader import dp, db, bot
-from states import AddQuestionTestStatesGroup, CreateTestStatesGroup
+from states import AddQuestionTestStatesGroup, CreateTestStatesGroup, AdvertisingStates
 from utils import question_photo_link
 from utils.misc.write_excel import write_data_excel
 
@@ -541,3 +542,40 @@ async def send_question_uz(msg: types.Message, state: FSMContext):
 
     await msg.answer(info, reply_markup=await create_edit_test_markup(test_id, olympiad_test=data.get('olympiad')))
     await AddQuestionTestStatesGroup.test.set()
+
+
+@dp.message_handler(IsPrivate(), Command('django_reklama'), user_id=ADMINS)
+async def send_reklama(msg: types.Message, state: FSMContext):
+    await msg.answer("Reklama postini yuboring!", reply_markup=ReplyKeyboardRemove())
+    await AdvertisingStates.post.set()
+
+
+@dp.message_handler(user_id=ADMINS, state=AdvertisingStates.post, content_types=[ContentType.TEXT, ContentType.PHOTO, ContentType.VIDEO])
+async def send_msg_to_all_users(msg: types.Message, state: FSMContext):
+    users = await db.select_Tashkent_users()
+    photos = msg.photo
+    video = msg.video
+    if photos:
+        photo_id = photos[-1].file_id
+        for user in users:
+            try:
+                await bot.send_photo(user[1], photo=photo_id, caption=msg.caption)
+            except Exception as e:
+                pass
+                # print(f"Failed to send message to user {user[1]}: {e}")
+    elif video:
+        for user in users:
+            try:
+                await bot.send_video(user[1], video=video.file_id, caption=msg.caption)
+            except Exception as e:
+                pass
+                # print(f"Failed to send message to user {user[1]}: {e}")
+    else:
+        for user in users:
+            try:
+                await bot.send_message(user[1], msg.text)
+            except Exception as e:
+                pass
+                # print(f"Failed to send message to user {user[1]}: {e}")
+    await msg.answer("Xabar barcha foydalanuvchilarga yuborildi!", reply_markup=menu_markup)
+    await state.finish()

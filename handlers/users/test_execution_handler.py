@@ -3,9 +3,8 @@ import datetime
 import os
 import time
 
-import pytz
 from aiogram import types
-from aiogram.types import ReplyKeyboardRemove, ContentType, InlineKeyboardMarkup, InputFile
+from aiogram.types import ReplyKeyboardRemove, ContentType, InputFile
 from aiogram.dispatcher import FSMContext
 
 from data.config import sciences_uz, sciences_ru, sciences_dict, responses_uz, responses_ru
@@ -17,7 +16,8 @@ from keyboards.inline import start_test_markup_uz, start_test_markup_ru, make_ke
 from loader import dp, db
 from states import TestStatesGroup, PINFLStateGroup
 from utils.db_api import post_or_put_result
-from utils.misc.create_certificate import create_certificate, photo_link
+from utils.misc.create_certificate import create_certificate
+from utils.misc.create_certificate.create_certificate import create_certificate_new_olympiad
 
 
 @dp.message_handler(IsPrivate(), text="👨‍💻 TEST TOPSHIRISH")
@@ -39,14 +39,12 @@ async def solution_test_uz(msg: types.Message, state: FSMContext):
             await msg.answer_photo(image, caption=result, reply_markup=id_card_uz_markup)
         await PINFLStateGroup.pinfl.set()
         return
-    await msg.reply("Olimpiada vaqtida test topshira olmaysiz!")
-    return
     info = f"Qaysi fandan test topshirmoqchisiz?"
     await msg.answer(info, reply_markup=sciences_uz_markup)
     await state.set_state(TestStatesGroup.science)
 
 
-@dp.message_handler(IsPrivate(), text="🏆 OLIMPIADA (1-bosqich)")
+@dp.message_handler(IsPrivate(), text="🏆 YANGI OLIMPIADA")
 async def solution_test_uz(msg: types.Message, state: FSMContext):
     user = await db.select_user(msg.from_user.id)
 
@@ -60,9 +58,9 @@ async def solution_test_uz(msg: types.Message, state: FSMContext):
     if test_app is False:
         await msg.answer(f"Hozirda {user[8]} fanidan olimpiada testi mavjud emas!")
         return
-
-    if await db.select_result_test_user(msg.from_user.id, user[8], True):
-        await msg.answer(f"{user[8]} fanidan olimpiada testini yechib bo'lgansiz!\n")
+    test_result = await db.select_result_active_olympiad_user(msg.from_user.id)
+    if test_result:
+        await msg.answer(f"{test_result[3]} fanidan olimpiada testini yechib bo'lgansiz!\n")
         return
 
     start_localized_datetime = test_app[8]
@@ -78,7 +76,7 @@ async def solution_test_uz(msg: types.Message, state: FSMContext):
 
 
 async def start_olympiad_test_uz(msg: types.Message, state: FSMContext, test_app, subject):
-    info = (f"OLIMPIADA (1-bosqich)\n\n"
+    info = (f"YANGI OLIMPIADA\n\n"
             f"Fan: {subject}\n\n"
             f"📝 Savollar soni: {test_app[4]}\n\n"
             f"Testni boshlash uchun \"👨‍💻 Testni boshlash\" tugmasini bosing!")
@@ -98,7 +96,7 @@ async def start_olympiad_test_uz(msg: types.Message, state: FSMContext, test_app
     await message.delete()
 
 
-@dp.message_handler(IsPrivate(), text="🏆 ОЛИМПИАДА (1-й этап)")
+@dp.message_handler(IsPrivate(), text="🏆 НОВАЯ ОЛИМПИАДА")
 async def solution_test_uz(msg: types.Message, state: FSMContext):
     user = await db.select_user(msg.from_user.id)
 
@@ -113,8 +111,9 @@ async def solution_test_uz(msg: types.Message, state: FSMContext):
         await msg.answer(f"Сейчас нет олимпиадного теста по {user[8]} предмету!")
         return
 
-    if await db.select_result_test_user(msg.from_user.id, sciences_dict.get(user[8]), True):
-        await msg.answer(f"Вы успешно сдали олимпиадный тест по {user[8]} предмету!\n")
+    test_result = await db.select_result_active_olympiad_user(msg.from_user.id)
+    if test_result:
+        await msg.answer(f"Вы завершили олимпиадный тест по предмету {test_result[3]}!")
         return
 
     start_localized_datetime = test_app[8].date()
@@ -130,7 +129,7 @@ async def solution_test_uz(msg: types.Message, state: FSMContext):
 
 
 async def start_olympiad_test(msg: types.Message, state: FSMContext, test_app, subject):
-    info = (f"ОЛИМПИАДА (1-й этап)\n\n"
+    info = (f"НОВАЯ ОЛИМПИАДА\n\n"
             f"Предмет: {subject}\n\n"
             f"📝 Количество вопросов: {test_app[4]}\n\n"
             f"Нажмите кнопку \"👨‍💻 Начать тест\" для начала тестирования!")
@@ -170,8 +169,6 @@ async def solution_test_ru(msg: types.Message, state: FSMContext):
             await msg.answer_photo(image, caption=result, reply_markup=id_card_ru_markup)
         await PINFLStateGroup.pinfl.set()
         return
-    await msg.reply("Во время Олимпиады тест сдавать нельзя!")
-    return
     info = f"Из какого предмета вы хотите сдать тест?"
     await msg.answer(info, reply_markup=sciences_ru_markup)
     await state.set_state(TestStatesGroup.science)
@@ -252,6 +249,7 @@ async def err_science_test(msg: types.Message, state: FSMContext):
 
 @dp.callback_query_handler(text="start_test", state=TestStatesGroup.ready)
 async def start_test(call: types.CallbackQuery, state: FSMContext):
+    await state.update_data({'start_time': datetime.datetime.now()})
     data = await state.get_data()
     test_id = data.get('test_id')
     question_num = 1
@@ -347,60 +345,74 @@ async def handle_test_completion(call, state, test_id, user_resp, language, resp
     user_name = user[3]
     db_responses = ''.join(['1' if x == y else '0' for x, y in zip(responses, user_resp)])
     true_response_count = db_responses.count('1')
+    start_time = data.get('start_time')
+    end_time = datetime.datetime.now()
+    time_difference = end_time - start_time
+    difference_in_minutes = round(time_difference.total_seconds() / 60, 2)
 
     if data.get('olympiad_test'):
-        text1 = ("✅ Olimpiada testi yakunlandi!\n\nHurmatli {}, siz test savollarining {} tasiga to'g'ri javob berib, "
-                 "{} ballni qo'lga kiritdingiz.\n\nTabriklaymiz, siz olimpiadaning 2-bosqichiga o'tdingiz. 2-bosqich "
-                 "may oyida Fan va texnologiyalar universitetining binosida bo'lib o'tadi. \n\nShu bilan birga, "
-                 "siz 2 million so'mlik vaucherni ham qo'lga kiritdingiz. Ushbu vaucherni Fan va texnologiyalar "
-                 "universitetida shartnoma to'lovi uchun bir martalik chegirma sifatida ishlatishingiz mumkin.\n\nFan "
-                 "va texnologiyalar universitetining yangiliklaridan xabardor bo'lib turish uchun @usatuzb telegram "
-                 "kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun 78-888-38-88 telefon raqamiga qo'ng'iroq "
-                 "qiling.\n\nBizni sizni kutamiz!")
-        text2 = ("✅ Olimpiada testi yakunlandi!\n\nHurmatli {}, siz test savollarining {} tasiga to'g'ri javob berib, "
-                 "{} ballni qo'lga kiritdingiz.\n\nTabriklaymiz, siz olimpiadaning 2-bosqichiga o'tdingiz. 2-bosqich "
-                 "may oyida Fan va texnologiyalar universitetining binosida bo'lib o'tadi. \n\nShu bilan birga, "
-                 "siz 1,5 million so'mlik vaucherni ham qo'lga kiritdingiz. Ushbu vaucherni Fan va texnologiyalar "
-                 "universitetida shartnoma to'lovi uchun bir martalik chegirma sifatida ishlatishingiz mumkin.\n\nFan "
-                 "va texnologiyalar universitetining yangiliklaridan xabardor bo'lib turish uchun @usatuzb telegram "
-                 "kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun 78-888-38-88 telefon raqamiga qo'ng'iroq "
-                 "qiling.\n\nBizni sizni kutamiz!")
-        text3 = ("✅ Olimpiada testi yakunlandi!\n\nHurmatli {}, siz test savollarining {} tasiga to'g'ri javob berib, "
-                 "{} ballni qo'lga kiritdingiz.\n\nTabriklaymiz, siz olimpiadada muvaffaqiyatli ishtirok etdingiz, "
-                 "ammo 2-bosqichda ishtirok etish uchun yetarlicha ball to'play olmadingiz. \n\nShunga qaramay, "
-                 "universitetimizda ta'lim olish istagini bildirganingiz va faolligingiz uchun sizga qiymati 1 "
-                 "million so'mlik vaucherni taqdim etamiz. Ushbu vaucherni Fan va texnologiyalar universitetida "
-                 "shartnoma to'lovi uchun bir martalik chegirma sifatida ishlatishingiz mumkin. Shu bilan birga, "
-                 "Fan va texnologiyalar universitetiga hujjatlaringizni topshirsangiz, sizni imtihonlarsiz qabul "
-                 "qilamiz. \n\nFan va texnologiyalar universitetining yangiliklaridan xabardor bo'lib turish uchun "
-                 "@usatuzb telegram kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun 78-888-38-88 telefon "
-                 "raqamiga qo'ng'iroq qiling.\n\nSiz bilan universitetimizning talabasi sifatida uchrashishimizni "
-                 "sabrsizlik bilan kutib qolamiz! 🤗")
-        text4 = ("✅ Olimpiada testi yakunlandi!\n\nHurmatli {}, siz test savollarining {} tasiga to'g'ri javob berib, "
-                 "{} ballni qo'lga kiritdingiz.\n\nAfsuski, siz olimpiadaning 2-bosqichida ishtirok etish uchun "
-                 "yetarlicha ball to'play olmadingiz. \n\nAmmo hech tushkunlikka tushmang. Yaqin kunlarda "
-                 "universitetimizda 2024/2025 o'quv yili uchun qabul boshlanadi va siz hujjatlaringizni hamda "
-                 "imtihonni onlayn topshirib, o'z kuchingizni yana sinab ko'rishingiz mumkin bo'ladi.\n\nFan va "
-                 "texnologiyalar universitetining yangiliklaridan xabardor bo'lib turish uchun @usatuzb telegram "
-                 "kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun 78-888-38-88 telefon raqamiga qo'ng'iroq "
-                 "qiling.\n\nSiz bilan universitetimizning talabasi sifatida uchrashishimizni sabrsizlik bilan kutib "
-                 "qolamiz! 🤗")
+        # text1 = ("✅ Olimpiada testi yakunlandi!\n\nHurmatli {}, siz test savollarining {} tasiga to'g'ri javob berib, "
+        #          "{} ballni qo'lga kiritdingiz.\n\nTabriklaymiz, siz olimpiadaning 2-bosqichiga o'tdingiz. 2-bosqich "
+        #          "may oyida Fan va texnologiyalar universitetining binosida bo'lib o'tadi. \n\nShu bilan birga, "
+        #          "siz 2 million so'mlik vaucherni ham qo'lga kiritdingiz. Ushbu vaucherni Fan va texnologiyalar "
+        #          "universitetida shartnoma to'lovi uchun bir martalik chegirma sifatida ishlatishingiz mumkin.\n\nFan "
+        #          "va texnologiyalar universitetining yangiliklaridan xabardor bo'lib turish uchun @usatuzb telegram "
+        #          "kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun 78-888-38-88 telefon raqamiga qo'ng'iroq "
+        #          "qiling.\n\nBizni sizni kutamiz!")
+        # text2 = ("✅ Olimpiada testi yakunlandi!\n\nHurmatli {}, siz test savollarining {} tasiga to'g'ri javob berib, "
+        #          "{} ballni qo'lga kiritdingiz.\n\nTabriklaymiz, siz olimpiadaning 2-bosqichiga o'tdingiz. 2-bosqich "
+        #          "may oyida Fan va texnologiyalar universitetining binosida bo'lib o'tadi. \n\nShu bilan birga, "
+        #          "siz 1,5 million so'mlik vaucherni ham qo'lga kiritdingiz. Ushbu vaucherni Fan va texnologiyalar "
+        #          "universitetida shartnoma to'lovi uchun bir martalik chegirma sifatida ishlatishingiz mumkin.\n\nFan "
+        #          "va texnologiyalar universitetining yangiliklaridan xabardor bo'lib turish uchun @usatuzb telegram "
+        #          "kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun 78-888-38-88 telefon raqamiga qo'ng'iroq "
+        #          "qiling.\n\nBizni sizni kutamiz!")
+        # text3 = ("✅ Olimpiada testi yakunlandi!\n\nHurmatli {}, siz test savollarining {} tasiga to'g'ri javob berib, "
+        #          "{} ballni qo'lga kiritdingiz.\n\nTabriklaymiz, siz olimpiadada muvaffaqiyatli ishtirok etdingiz, "
+        #          "ammo 2-bosqichda ishtirok etish uchun yetarlicha ball to'play olmadingiz. \n\nShunga qaramay, "
+        #          "universitetimizda ta'lim olish istagini bildirganingiz va faolligingiz uchun sizga qiymati 1 "
+        #          "million so'mlik vaucherni taqdim etamiz. Ushbu vaucherni Fan va texnologiyalar universitetida "
+        #          "shartnoma to'lovi uchun bir martalik chegirma sifatida ishlatishingiz mumkin. Shu bilan birga, "
+        #          "Fan va texnologiyalar universitetiga hujjatlaringizni topshirsangiz, sizni imtihonlarsiz qabul "
+        #          "qilamiz. \n\nFan va texnologiyalar universitetining yangiliklaridan xabardor bo'lib turish uchun "
+        #          "@usatuzb telegram kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun 78-888-38-88 telefon "
+        #          "raqamiga qo'ng'iroq qiling.\n\nSiz bilan universitetimizning talabasi sifatida uchrashishimizni "
+        #          "sabrsizlik bilan kutib qolamiz! 🤗")
+        # text4 = ("✅ Olimpiada testi yakunlandi!\n\nHurmatli {}, siz test savollarining {} tasiga to'g'ri javob berib, "
+        #          "{} ballni qo'lga kiritdingiz.\n\nAfsuski, siz olimpiadaning 2-bosqichida ishtirok etish uchun "
+        #          "yetarlicha ball to'play olmadingiz. \n\nAmmo hech tushkunlikka tushmang. Yaqin kunlarda "
+        #          "universitetimizda 2024/2025 o'quv yili uchun qabul boshlanadi va siz hujjatlaringizni hamda "
+        #          "imtihonni onlayn topshirib, o'z kuchingizni yana sinab ko'rishingiz mumkin bo'ladi.\n\nFan va "
+        #          "texnologiyalar universitetining yangiliklaridan xabardor bo'lib turish uchun @usatuzb telegram "
+        #          "kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun 78-888-38-88 telefon raqamiga qo'ng'iroq "
+        #          "qiling.\n\nSiz bilan universitetimizning talabasi sifatida uchrashishimizni sabrsizlik bilan kutib "
+        #          "qolamiz! 🤗")
+        #
+        # result = true_response_count / len(db_responses)
+        # image_index = (2 if result >= 0.85 else 1 if result >= 0.65 else 0) if result > 0.33 else 3
+        # info_template = (text1 if result >= 0.85 else text2 if result >= 0.65 else text3) if result > 0.33 else text4
 
         result = true_response_count / len(db_responses)
-        image_index = (2 if result >= 0.85 else 1 if result >= 0.65 else 0) if result > 0.33 else 3
-        info_template = (text1 if result >= 0.85 else text2 if result >= 0.65 else text3) if result > 0.33 else text4
-
+        text1 = "✅ Olimpiada testi yakunlandi!\n\nHurmatli {}, siz test savollarining {} tasiga to'g'ri javob berib, {} ballni qo'lga kiritdingiz.\n\nTabriklaymiz, siz Fan va texnologiyalar universitetiga imtihonsiz qabul qilinish imkoniga ega bo'ldingiz.\n\nYangiliklaridan xabardor bo'lib turish uchun @usatuzb telegram kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun 78-888-38-88 telefon raqamiga qo'ng'iroq qiling.\n\nSiz bilan universitetimizning talabasi sifatida uchrashishimizni sabrsizlik bilan kutib qolamiz! 🤗"
+        text2 = "✅ Olimpiada testi yakunlandi!\n\nHurmatli {}, siz test savollarining {} tasiga to'g'ri javob berib, {} ballni qo'lga kiritdingiz.\n\nTabriklaymiz, afsuski siz Fan va texnologiyalar universitetiga imtihonsiz qabul qilinish imkonini qo'lga kirita olmadingiz.\n\nYangiliklaridan xabardor bo'lib turish uchun @usatuzb telegram kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun 78-888-38-88 telefon raqamiga qo'ng'iroq qiling.\n\nSiz bilan universitetimizning talabasi sifatida uchrashishimizni sabrsizlik bilan kutib qolamiz! 🤗"
+        info_template = text1 if result >= 0.7 else text2
         info = info_template.format(user_name, true_response_count, true_response_count*2)
         image_url = "Mavjud emas"
         await db.add_test_result(test_id, user_id, language, *user[3:8], data.get('science'),
-                                 db_responses, datetime.datetime.now(), user[-1], image_url, data.get('olympiad_test'))
+                                 db_responses, datetime.datetime.now(), user[-1], image_url, data.get('olympiad_test'),
+                                 difference_in_minutes)
         await call.message.answer(info, reply_markup=await menu_user_markup(call.from_user.id) if language == 'uzbek' else menu_test_ru)
 
-        image_path = await create_certificate(user_id=user_id, fullname=user[3], image_index=image_index, science=user[8], language=language)
-        await call.message.answer_photo(InputFile(image_path), caption="Sizni sertifikat bilan tabriklaymiz!")
+        # image_path = await create_certificate(user_id=user_id, fullname=user[3], image_index=image_index,
+        #                                       science=user[8], language=language)
+        # await call.message.answer_photo(InputFile(image_path), caption="Sizni sertifikat bilan tabriklaymiz!")
         # image_url = await photo_link(image_path)
+        if result >= 0.7:
+            image_path = await create_certificate_new_olympiad(user_id=user_id, fullname=user[3], science=user[8],
+                                                               language=language)
+            await call.message.answer_photo(InputFile(image_path), caption="Sizni sertifikat bilan tabriklaymiz!")
+            os.remove(image_path) if os.path.exists(image_path) else None
         await post_or_put_result(user[0], user_id, result, image_url)
-        os.remove(image_path) if os.path.exists(image_path) else None
     else:
         info_template = ("✅ Test yakunlandi!\nHurmatli {}, siz test savollarining {} tasiga to’g’ri va {} tasiga "
                          "noto’g’ri javob berdingiz.") if language == 'uzbek' else ("✅ Тест завершен!\nУважаемый(ая) {"
@@ -411,7 +423,8 @@ async def handle_test_completion(call, state, test_id, user_resp, language, resp
         await call.message.answer(info, reply_markup=await menu_user_markup(call.from_user.id) if language == 'uzbek' else menu_test_ru)
         image_url = None
         await db.add_test_result(test_id, user_id, language, *user[3:8], data.get('science'),
-                                 db_responses, datetime.datetime.now(), user[-1], image_url, data.get('olympiad_test'))
+                                 db_responses, datetime.datetime.now(), user[-1], image_url, data.get('olympiad_test'),
+                                 difference_in_minutes)
     await state.reset_data()
     await state.finish()
 

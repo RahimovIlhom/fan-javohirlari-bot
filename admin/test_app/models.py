@@ -54,6 +54,7 @@ class TestResult(models.Model):
     test_id = models.IntegerField(null=True, blank=True)
     pinfl = models.CharField(max_length=30, null=True, blank=True)
     certificate_image = models.CharField(max_length=255, null=True, blank=True)
+    interval_minute = models.DecimalField(decimal_places=2, max_digits=10, null=True, blank=True)
 
     class Meta:
         db_table = 'test_result'

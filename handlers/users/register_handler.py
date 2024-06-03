@@ -379,21 +379,11 @@ async def send_science(msg: types.Message, state: FSMContext):
         if msg.text not in sciences_uz:
             await msg.answer("‼️ Iltimos, quyidagi tugmalardan foydalaning!", reply_markup=sciences_uz_markup)
             return
-        olympiad_test = await db.select_test(msg.text, data.get('language'), True)
-        if olympiad_test:
-            
-            stop_localized_datetime = olympiad_test[6]
-            now_localized_datetime = datetime.datetime.now()
-            if now_localized_datetime > stop_localized_datetime:
-                await msg.answer(f"{msg.text} fanidan 1-bosqich olimpiada yakunlandi!\n"
-                                 f"Boshqa fanni tanlashingiz mumkin:", reply_markup=sciences_uz_markup)
-                return
         info = ("Arizangiz qabul qilinishi uchun, iltimos, \"Fan javohirlari\" telegram kanaliga a'zo bo'ling. U yerda "
                 "loyiha haqida ma'lumotlar, fanlar bo'yicha testlar va ularning javoblari, olimpiada o'tkazilish "
                 "kunlari e'lon qilinib boriladi. Shu bilan birga, kanalda abituriyentlar uchun qiziq bo'lgan "
                 "ma'lumotlar, talabalar hayoti, hajviy postlar berib boriladi.")
-        success = ("Tabriklaymiz, siz ro'yxatdan o'tdingiz. O'zingizni sinab ko'rish uchun test topshirmoqchi "
-                   "bo'lsangiz, quyidagi \"Test topshirish\" tugmasini bosing.")
+        success = "Tabriklaymiz, siz ro'yxatdan o'tdingiz."
         data_refresh = "♻️ Ma'lumotlar qayta ishlanmoqda!"
         markup = await menu_user_markup(msg.from_user.id)
     else:
@@ -407,21 +397,11 @@ async def send_science(msg: types.Message, state: FSMContext):
         if msg.text not in sciences_ru:
             await msg.answer("‼️ Пожалуйста, используйте кнопки ниже!", reply_markup=sciences_ru_markup)
             return
-        olympiad_test = await db.select_test(sciences_dict[msg.text], data.get('language'), True)
-        if olympiad_test:
-            
-            stop_localized_datetime = olympiad_test[6]
-            now_localized_datetime = datetime.datetime.now()
-            if now_localized_datetime > stop_localized_datetime:
-                await msg.answer(f"Завершился 1-й этап олимпиады по {msg.text}!\n"
-                                 f"Выберите другую предмет:", reply_markup=sciences_ru_markup)
-                return
         info = ("Для того, чтобы вашу заявку приняли, пожалуйста, подпишитесь на Telegram-канал «Fan javohirlari». Там "
                 "публикуется информация о проекте, тесты по разным предметам и   ответы на них, а также даты "
                 "проведения олимпиады. Также на канале публикуется   интересная информация для абитуриентов, "
                 "посты про студенческую жизнь, юмористические посты.")
-        success = ("Поздравляем, теперь вы зарегистрированы! Если вы хотите пройти тест, чтобы проверить себя, "
-                   "нажмите кнопку «Пройти тест».")
+        success = "Поздравляем, теперь вы зарегистрированы! "
         data_refresh = "♻️ Данные обрабатываются!"
         markup = menu_test_ru
     final_status = True

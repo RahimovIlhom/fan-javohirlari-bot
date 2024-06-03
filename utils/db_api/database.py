@@ -1,4 +1,5 @@
 import datetime
+import logging
 from uuid import uuid4
 
 import aiomysql
@@ -104,6 +105,50 @@ class Database:
         else:
             return None
 
+    async def select_result_olympiad_user(self, tg_id):
+        query_tests = """
+            SELECT
+                id, science, create_time, is_confirm, olympiad_test
+            FROM tests
+            WHERE is_confirm = %s AND olympiad_test = %s AND end_time >= CURDATE()
+            ORDER BY create_time;
+        """
+        all_tests = await self.execute_query(query_tests, True, True)
+        tests = []
+        if all_tests:
+            for ts in all_tests[::-1]:
+                if not tuple(filter(lambda obj: obj[1] == ts[1], tests)):
+                    tests.append(ts)
+        for ts in tests:
+            query = ("SELECT id, tg_id, fullname, science, responses, interval_minute FROM test_result "
+                     "WHERE tg_id = %s AND test_id = %s")
+            resp = await self.execute_query(query, str(tg_id), ts[0])
+            if resp:
+                return resp[0]
+        return None
+
+    async def select_result_active_olympiad_user(self, tg_id):
+        query_tests = """
+                SELECT
+                    id, science, create_time, is_confirm, olympiad_test
+                FROM tests
+                WHERE is_confirm = %s AND olympiad_test = %s AND end_time >= CURDATE()
+                ORDER BY create_time;
+            """
+        all_tests = await self.execute_query(query_tests, True, True)
+        tests = []
+        if all_tests:
+            for ts in all_tests[::-1]:
+                if not tuple(filter(lambda obj: obj[1] == ts[1], tests)):
+                    tests.append(ts)
+        for ts in tests:
+            query = ("SELECT id, tg_id, fullname, science FROM test_result "
+                     "WHERE tg_id = %s AND test_id = %s")
+            resp = await self.execute_query(query, str(tg_id), ts[0])
+            if resp:
+                return resp[0]
+        return None
+
     async def select_test(self, science, language=None, olympiad_test=False):
         if language is None:
             query = "SELECT * FROM tests WHERE science = %s AND is_confirm = %s AND olympiad_test=%s"
@@ -112,7 +157,7 @@ class Database:
             query = "SELECT * FROM tests WHERE science = %s AND is_confirm = %s AND language = %s AND olympiad_test=%s"
             resp = await self.execute_query(query, science, True, language, olympiad_test)
         if resp:
-            return resp[0]
+            return resp[-1]
         else:
             return False
 
@@ -126,24 +171,25 @@ class Database:
 
     async def add_test_result(self, test_id, tg_id, language, fullname, phone_number, region, district, school_number,
                               science, responses, result_time, pinfl=None, certificate_image=None, olympiad_test=False,
-                              *args, **kwargs):
+                              interval_minute=None,  *args, **kwargs):
         test_result = await self.select_result_test_user(str(tg_id), science, olympiad_test)
         if test_result:
             query = ("UPDATE test_result SET language=%s, fullname=%s, phone_number=%s, region=%s, district=%s, "
-                     "school_number=%s, science=%s, responses=%s, result_time=%s, pinfl=%s, certificate_image=%s "
-                     "WHERE test_id=%s AND tg_id=%s;")
+                     "school_number=%s, science=%s, responses=%s, result_time=%s, pinfl=%s, certificate_image=%s, "
+                     "interval_minute = %s WHERE test_id=%s AND tg_id=%s;")
             await self.execute_query(query, language, fullname, str(phone_number), region, district, school_number,
-                                     science, responses, result_time, pinfl, certificate_image, test_id, str(tg_id))
+                                     science, responses, result_time, pinfl, certificate_image, interval_minute,
+                                     test_id, str(tg_id))
         else:
             query = "SELECT MAX(id) FROM test_result;"
             max_id = (await self.execute_query(query))[0][0]
             new_id = (max_id if max_id else 0) + 1
             query = ("INSERT INTO test_result (id, tg_id, language, fullname, phone_number, region, district, "
-                     "school_number, science, responses, result_time, test_id, pinfl, certificate_image) VALUES (%s, "
-                     "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);")
-            await self.execute_query(query, new_id, str(tg_id), language, fullname, str(phone_number), region, district,
-                                     school_number,
-                                     science, responses, result_time, test_id, pinfl, certificate_image)
+                     "school_number, science, responses, result_time, test_id, pinfl, certificate_image, "
+                     "interval_minute) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);")
+            await self.execute_query(query, new_id, str(tg_id), language, fullname, str(phone_number), region,
+                                     district, school_number, science, responses, result_time, test_id, pinfl,
+                                     certificate_image, interval_minute)
 
     async def select_science_tests(self, science, olympiad_test=False):
         query = "SELECT * FROM tests WHERE science = %s AND olympiad_test = %s"

@@ -48,7 +48,7 @@ async def bot_start(message: types.Message, state: FSMContext):
             await PINFLStateGroup.pinfl.set()
             return
         if user[2] == 'uzbek':
-            await message.answer("Test topshirish uchun quyidagi tugmadan foydalaning 👇", reply_markup=await menu_user_markup(message.from_user.id))
+            await message.answer("Test topshirish uchun quyidagi tugmalardan foydalaning 👇", reply_markup=await menu_user_markup(message.from_user.id))
         else:
             await message.answer("Используйте кнопку ниже, чтобы пройти тест 👇", reply_markup=menu_test_ru)
         await state.finish()
@@ -162,16 +162,16 @@ async def checker(call: types.CallbackQuery, state: FSMContext):
                               disable_web_page_preview=True)
 
 
-@dp.callback_query_handler(text="download_certificate")
-async def send_cer(call: types.CallbackQuery):
-    user = await db.select_user(call.from_user.id)
-    await call.message.delete()
-    if user[2] == 'uzbek':
-        test_result = await db.select_result_test_user(call.from_user.id, user[8], True)
-    else:
-        test_result = await db.select_result_test_user(call.from_user.id, sciences_dict[user[8]], True)
-    if test_result:
-        if test_result[13]:
-            await call.message.answer_photo(test_result[13])
-            return
-    await call.message.answer("Certificate not found")
+# @dp.callback_query_handler(text="download_certificate")
+# async def send_cer(call: types.CallbackQuery):
+#     user = await db.select_user(call.from_user.id)
+#     await call.message.delete()
+#     if user[2] == 'uzbek':
+#         test_result = await db.select_result_test_user(call.from_user.id, user[8], True)
+#     else:
+#         test_result = await db.select_result_test_user(call.from_user.id, sciences_dict[user[8]], True)
+#     if test_result:
+#         if test_result[13]:
+#             await call.message.answer_photo(test_result[13])
+#             return
+#     await call.message.answer("Certificate not found")

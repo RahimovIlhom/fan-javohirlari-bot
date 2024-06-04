@@ -160,7 +160,7 @@ class Database:
                 ORDER BY correct_answers_count DESC, interval_minute ASC
             """)
             return await self.execute_query(query, test[0])
-        return None
+        return []
 
     async def select_test(self, science, language=None, olympiad_test=False):
         if language is None:

@@ -110,17 +110,15 @@ class Database:
             SELECT
                 id, science, create_time, is_confirm, olympiad_test
             FROM tests
-            WHERE is_confirm = %s AND olympiad_test = %s AND end_time >= CURDATE()
-            ORDER BY create_time;
+            WHERE is_confirm = %s AND olympiad_test = %s
+            ORDER BY end_time;
         """
         all_tests = await self.execute_query(query_tests, True, True)
-        tests = []
-        if all_tests:
-            for ts in all_tests[::-1]:
-                if not tuple(filter(lambda obj: obj[1] == ts[1], tests)):
-                    tests.append(ts)
+        tests = all_tests[7:]
         for ts in tests:
-            query = ("SELECT id, tg_id, fullname, science, responses, interval_minute FROM test_result "
+            query = ("SELECT id, tg_id, fullname, science, responses, interval_minute, "
+                     "LENGTH(REPLACE(responses, '0', '')) AS correct_answers_count "
+                     "FROM test_result "
                      "WHERE tg_id = %s AND test_id = %s")
             resp = await self.execute_query(query, str(tg_id), ts[0])
             if resp:
@@ -132,21 +130,36 @@ class Database:
                 SELECT
                     id, science, create_time, is_confirm, olympiad_test
                 FROM tests
-                WHERE is_confirm = %s AND olympiad_test = %s AND end_time >= CURDATE()
-                ORDER BY create_time;
+                WHERE is_confirm = %s AND olympiad_test = %s
+                ORDER BY end_time;
             """
         all_tests = await self.execute_query(query_tests, True, True)
-        tests = []
-        if all_tests:
-            for ts in all_tests[::-1]:
-                if not tuple(filter(lambda obj: obj[1] == ts[1], tests)):
-                    tests.append(ts)
+        tests = all_tests[7:]
         for ts in tests:
             query = ("SELECT id, tg_id, fullname, science FROM test_result "
                      "WHERE tg_id = %s AND test_id = %s")
             resp = await self.execute_query(query, str(tg_id), ts[0])
             if resp:
                 return resp[0]
+        return None
+
+    async def select_result_for_science_new_olympiad(self, science):
+        query_test = """
+            SELECT id FROM tests
+            WHERE is_confirm = %s AND olympiad_test = %s AND science = %s
+            ORDER BY end_time;
+        """
+        science_tests = await self.execute_query(query_test, True, True, science)
+        if len(science_tests) > 1:
+            test = science_tests[-1]
+            query = ("""
+                SELECT id, tg_id, fullname, science, responses, interval_minute, 
+                LENGTH(REPLACE(responses, '0', '')) AS correct_answers_count
+                FROM test_result 
+                WHERE test_id = %s
+                ORDER BY correct_answers_count DESC, interval_minute ASC
+            """)
+            return await self.execute_query(query, test[0])
         return None
 
     async def select_test(self, science, language=None, olympiad_test=False):

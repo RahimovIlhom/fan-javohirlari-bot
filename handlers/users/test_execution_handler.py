@@ -16,6 +16,7 @@ from keyboards.inline import start_test_markup_uz, start_test_markup_ru, make_ke
 from loader import dp, db
 from states import TestStatesGroup, PINFLStateGroup
 from utils.db_api import post_or_put_result
+from utils.db_api.send_test_result_API import post_or_put_new_result
 from utils.misc.create_certificate import create_certificate
 from utils.misc.create_certificate.create_certificate import create_certificate_new_olympiad
 
@@ -412,7 +413,8 @@ async def handle_test_completion(call, state, test_id, user_resp, language, resp
                                                                language=language)
             await call.message.answer_photo(InputFile(image_path), caption="Sizni sertifikat bilan tabriklaymiz!")
             os.remove(image_path) if os.path.exists(image_path) else None
-        await post_or_put_result(user[0], user_id, result, image_url)
+        # await post_or_put_result(user[0], user_id, result, image_url)
+        await post_or_put_new_result(user[0], user_id, result, image_url)
     else:
         info_template = ("✅ Test yakunlandi!\nHurmatli {}, siz test savollarining {} tasiga to’g’ri va {} tasiga "
                          "noto’g’ri javob berdingiz.") if language == 'uzbek' else ("✅ Тест завершен!\nУважаемый(ая) {"

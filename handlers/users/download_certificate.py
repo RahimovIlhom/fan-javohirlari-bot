@@ -49,3 +49,20 @@ async def set_name_func(msg: types.Message, state: FSMContext):
 @dp.message_handler(IsPrivate(), text=["📊 Reyting", "📊 Рейтинг"])
 async def download_certificate(msg: types.Message):
     tg_id = msg.from_user.id
+    user_result = await db.select_result_olympiad_user(tg_id)
+    if user_result:
+        science = user_result[3]
+    else:
+        user_info = await db.select_user(tg_id)
+        science = user_info[8]
+    all_result = await db.select_result_for_science_new_olympiad(science)
+    resp_text = f"{science} fani yangi olimpiada natijasi:\n"
+    number = 1
+    for result in all_result[:5]:
+        resp_text += f"\n{number}. {result[2]} - {result[4].count('1') * 2} ball, {result[5]} daqiqa"
+        number += 1
+    if user_result:
+        if user_result not in all_result[:5]:
+            resp_text += (f"\n...\n...\n...\n{all_result.index(user_result) + 1}. "
+                          f"{user_result[2]} - {user_result[4].count('1') * 2} ball, {user_result[5]} daqiqa")
+    await msg.answer(resp_text)

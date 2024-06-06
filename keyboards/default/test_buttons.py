@@ -4,7 +4,7 @@ from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 async def menu_user_markup(user_id):
     markup = ReplyKeyboardMarkup(
         keyboard=[
-            [KeyboardButton(text='🏆 YANGI OLIMPIADA')],
+            [KeyboardButton(text='🏆 SINOV TEST IMTIHONI')],
         ],
         resize_keyboard=True
     )
@@ -15,7 +15,7 @@ async def menu_user_markup(user_id):
 
 menu_test_ru = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text='🏆 НОВАЯ ОЛИМПИАДА')],
+        [KeyboardButton(text='🏆 ЭКЗАМЕНАЦИОННЫЙ ТЕСТ')],
         [KeyboardButton(text='📥 Скачать сертификат')],
         [KeyboardButton(text='📊 Рейтинг')],
     ],

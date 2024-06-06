@@ -68,7 +68,7 @@ async def create_certificate_new_olympiad(user_id, fullname, science, language='
     font_science = ImageFont.truetype(FONT_MONTSERRAT_BOLD, 68)
     font_id = ImageFont.truetype(FONT_MONTSERRAT_REGULAR, 65)
 
-    img = Image.open(os.path.join(CERTIFICATE_FOLDER, f'new_olympiad.jpg'))
+    img = Image.open(os.path.join(CERTIFICATE_FOLDER, f'sertf.jpg'))
 
     draw = ImageDraw.Draw(img)
     if language != 'uzbek':
@@ -88,7 +88,7 @@ async def create_certificate_new_olympiad(user_id, fullname, science, language='
 
     text_bbox = draw.textbbox((1750, 1070), science_text, font=font_science)
     text_width = text_bbox[2] - text_bbox[0]
-    text_position = (1750 - text_width / 2, 1355)
+    text_position = (1750 - text_width / 2, 1350)
     draw.text(text_position, science_text, font=font_science, fill=TEXT_COLOR)
 
     draw.text((550, 2300), f"id: {user_id}", fill=(0, 0, 0), font=font_id)

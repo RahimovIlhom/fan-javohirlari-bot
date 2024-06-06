@@ -17,7 +17,7 @@ async def download_certificate(msg: types.Message, state: FSMContext):
     if test_result:
         responses = test_result[4]
         result = responses.count('1') / len(responses)
-        if result >= 0.7:
+        if result > 0.65:
             await state.set_data({'id': tg_id, 'science': test_result[3]})
             await msg.answer("Ism-familiyangizni kiriting:\n(Ushbu ism-familiya sertifikatingizda nashr qilinadi❗️):",
                              reply_markup=ReplyKeyboardRemove())
@@ -56,7 +56,7 @@ async def download_certificate(msg: types.Message):
         user_info = await db.select_user(tg_id)
         science = user_info[8]
     all_result = await db.select_result_for_science_new_olympiad(science)
-    resp_text = f"{science} fani yangi olimpiada natijasi:\n"
+    resp_text = f"{science} fani sinov test imtihon natijasi:\n"
     number = 1
     for result in all_result[:5]:
         resp_text += f"\n{number}. {result[2]} - {result[4].count('1') * 2} ball, {result[5]} daqiqa"

@@ -45,23 +45,19 @@ async def solution_test_uz(msg: types.Message, state: FSMContext):
     await state.set_state(TestStatesGroup.science)
 
 
-@dp.message_handler(IsPrivate(), text="🏆 YANGI OLIMPIADA")
+@dp.message_handler(IsPrivate(), text="🏆 SINOV TEST IMTIHONI")
 async def solution_test_uz(msg: types.Message, state: FSMContext):
     user = await db.select_user(msg.from_user.id)
 
     if user is None:
-        await msg.answer("‼️ Siz ro'yxatdan o'tmaganingiz uchun olimpiadada qatnasha olmaysiz!\n"
+        await msg.answer("‼️ Siz ro'yxatdan o'tmaganingiz uchun sinov test imtihonida qatnasha olmaysiz!\n"
                          "Ro'yxatdan o'tish uchun - /start", reply_markup=ReplyKeyboardRemove())
         return
 
     test_app = await db.select_test(user[8], 'uzbek', True)
 
     if test_app is False:
-        await msg.answer(f"Hozirda {user[8]} fanidan olimpiada testi mavjud emas!")
-        return
-    test_result = await db.select_result_active_olympiad_user(msg.from_user.id)
-    if test_result:
-        await msg.answer(f"{test_result[3]} fanidan olimpiada testini yechib bo'lgansiz!\n")
+        await msg.answer(f"Hozirda {user[8]} fanidan sinov test imtihoni mavjud emas!")
         return
 
     start_localized_datetime = test_app[8]
@@ -69,15 +65,19 @@ async def solution_test_uz(msg: types.Message, state: FSMContext):
     now_localized_datetime = datetime.datetime.now()
 
     if now_localized_datetime < start_localized_datetime:
-        await msg.answer(f"{user[8]} fanidan olimpiada test sinovlari {test_app[8].date()} soat 00:00da boshlanadi!")
+        await msg.answer(f"{user[8]} fanidan sinov test imtihoni {test_app[8].date()} soat 00:00da boshlanadi!")
     elif now_localized_datetime < stop_localized_datetime:
+        test_result = await db.select_result_active_olympiad_user(msg.from_user.id)
+        if test_result:
+            await msg.answer(f"{test_result[3]} fanidan sinov test imtihonini yechib bo'lgansiz!\n")
+            return
         await start_olympiad_test_uz(msg, state, test_app, user[8])
     else:
-        await msg.answer(f"{user[8]} fanidan olimpiada test sinovlari {test_app[6].date()} soat 00:00da yakunlangan!")
+        await msg.answer(f"{user[8]} fanidan sinov test imtihoni {test_app[6].date()} soat 00:00da yakunlangan!")
 
 
 async def start_olympiad_test_uz(msg: types.Message, state: FSMContext, test_app, subject):
-    info = (f"YANGI OLIMPIADA\n\n"
+    info = (f"SINOV TEST IMTIHONI\n\n"
             f"Fan: {subject}\n\n"
             f"📝 Savollar soni: {test_app[4]}\n\n"
             f"Testni boshlash uchun \"👨‍💻 Testni boshlash\" tugmasini bosing!")
@@ -97,7 +97,7 @@ async def start_olympiad_test_uz(msg: types.Message, state: FSMContext, test_app
     await message.delete()
 
 
-@dp.message_handler(IsPrivate(), text="🏆 НОВАЯ ОЛИМПИАДА")
+@dp.message_handler(IsPrivate(), text="🏆 ЭКЗАМЕНАЦИОННЫЙ ТЕСТ")
 async def solution_test_uz(msg: types.Message, state: FSMContext):
     user = await db.select_user(msg.from_user.id)
 
@@ -394,8 +394,8 @@ async def handle_test_completion(call, state, test_id, user_resp, language, resp
         # info_template = (text1 if result >= 0.85 else text2 if result >= 0.65 else text3) if result > 0.33 else text4
 
         result = true_response_count / len(db_responses)
-        text1 = "✅ Olimpiada testi yakunlandi!\n\nHurmatli {}, siz test savollarining {} tasiga to'g'ri javob berib, {} ballni qo'lga kiritdingiz.\n\nTabriklaymiz, siz Fan va texnologiyalar universitetiga imtihonsiz qabul qilinish imkoniga ega bo'ldingiz.\n\nYangiliklaridan xabardor bo'lib turish uchun @usatuzb telegram kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun 78-888-38-88 telefon raqamiga qo'ng'iroq qiling.\n\nSiz bilan universitetimizning talabasi sifatida uchrashishimizni sabrsizlik bilan kutib qolamiz! 🤗"
-        text2 = "✅ Olimpiada testi yakunlandi!\n\nHurmatli {}, siz test savollarining {} tasiga to'g'ri javob berib, {} ballni qo'lga kiritdingiz.\n\nTabriklaymiz, afsuski siz Fan va texnologiyalar universitetiga imtihonsiz qabul qilinish imkonini qo'lga kirita olmadingiz.\n\nYangiliklaridan xabardor bo'lib turish uchun @usatuzb telegram kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun 78-888-38-88 telefon raqamiga qo'ng'iroq qiling.\n\nSiz bilan universitetimizning talabasi sifatida uchrashishimizni sabrsizlik bilan kutib qolamiz! 🤗"
+        text1 = "✅ Sinov test imtihoni yakunlandi!\n\nHurmatli {}, siz test savollarining {} tasiga to'g'ri javob berib, {} ballni qo'lga kiritdingiz.\n\nTabriklaymiz, siz Fan va texnologiyalar universitetiga imtihonsiz qabul qilinish imkoniga ega bo'ldingiz.\n\nYangiliklaridan xabardor bo'lib turish uchun @usatuzb telegram kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun 78-888-38-88 telefon raqamiga qo'ng'iroq qiling.\n\nSiz bilan universitetimizning talabasi sifatida uchrashishimizni sabrsizlik bilan kutib qolamiz! 🤗"
+        text2 = "✅ Sinov test imtihoni testi yakunlandi!\n\nHurmatli {}, siz test savollarining {} tasiga to'g'ri javob berib, {} ballni qo'lga kiritdingiz.\n\nAfsuski siz Fan va texnologiyalar universitetiga imtihonsiz qabul qilinish imkonini qo'lga kirita olmadingiz.\n\nYangiliklaridan xabardor bo'lib turish uchun @usatuzb telegram kanaliga a'zo bo'lishingiz mumkin. Batafsil ma'lumot uchun 78-888-38-88 telefon raqamiga qo'ng'iroq qiling.\n\nSiz bilan universitetimizning talabasi sifatida uchrashishimizni sabrsizlik bilan kutib qolamiz! 🤗"
         info_template = text1 if result >= 0.7 else text2
         info = info_template.format(user_name, true_response_count, true_response_count*2)
         image_url = "Mavjud emas"
@@ -408,7 +408,7 @@ async def handle_test_completion(call, state, test_id, user_resp, language, resp
         #                                       science=user[8], language=language)
         # await call.message.answer_photo(InputFile(image_path), caption="Sizni sertifikat bilan tabriklaymiz!")
         # image_url = await photo_link(image_path)
-        if result >= 0.7:
+        if result > 0.65:
             image_path = await create_certificate_new_olympiad(user_id=user_id, fullname=user[3], science=user[8],
                                                                language=language)
             await call.message.answer_photo(InputFile(image_path), caption="Sizni sertifikat bilan tabriklaymiz!")

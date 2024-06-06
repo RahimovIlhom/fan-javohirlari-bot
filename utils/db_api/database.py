@@ -169,7 +169,9 @@ class Database:
         else:
             query = "SELECT * FROM tests WHERE science = %s AND is_confirm = %s AND language = %s AND olympiad_test=%s"
             resp = await self.execute_query(query, science, True, language, olympiad_test)
-        if resp:
+        if olympiad_test and len(resp) > 1:
+            return resp[-1]
+        elif not olympiad_test and resp:
             return resp[-1]
         else:
             return False

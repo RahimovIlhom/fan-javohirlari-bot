@@ -162,6 +162,22 @@ class Database:
             return await self.execute_query(query, test[0])
         return []
 
+    async def select_all_result(self, test_id):
+        query = ("""
+            WITH ranked_results AS (
+                SELECT 
+                    tg_id, fullname, language, science, pinfl, phone_number, region, district, school_number, responses, 
+                    interval_minute, result_time, LENGTH(REPLACE(responses, '0', '')) AS correct_answers_count,
+                    ROW_NUMBER() OVER (ORDER BY LENGTH(REPLACE(responses, '0', '')) DESC, interval_minute ASC) AS number
+                FROM test_result 
+                WHERE test_id = %s
+            )
+            SELECT number, tg_id, fullname, language, science, pinfl, phone_number, region, district, school_number, 
+            interval_minute, correct_answers_count, result_time, responses
+            FROM ranked_results;
+        """)
+        return await self.execute_query(query, test_id)
+
     async def select_test(self, science, language=None, olympiad_test=False):
         if language is None:
             query = "SELECT * FROM tests WHERE science = %s AND is_confirm = %s AND olympiad_test=%s"

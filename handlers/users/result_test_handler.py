@@ -78,12 +78,13 @@ async def back_base_menu(call: types.CallbackQuery, state: FSMContext):
 async def send_test_result_excel(call: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     test_id = call.data
-    columns = list(await db.select_test_result_column_names())
+    all_result = await db.select_all_result(test_id)
+    columns = ['number', 'tg_id', 'fullname', 'language', 'science', 'pinfl', 'phone_number', 'region', 'district',
+               'school_number', 'interval_minute', 'correct_answers_count', 'result_time']
     test = await db.select_test_id(test_id)
     columns += [str(i) for i in range(1, test[4] + 1)]
 
-    result = await db.select_test_result(test_id)
-    new_result = [[*user_result[:-1], *user_result[-1]] for user_result in result]
+    new_result = [[*user_result[:-1], *user_result[-1]] for user_result in all_result]
 
     file_path = await write_data_excel(columns, new_result, file_path=test[2])
     file = InputFile(path_or_bytesio=file_path)
